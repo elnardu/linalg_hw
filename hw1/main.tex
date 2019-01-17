@@ -1,0 +1,640 @@
+\documentclass[letter]{article}
+
+%% Sets page size and margins
+\usepackage[a4paper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+ 
+%% Useful packages
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{pythontex}
+\usepackage{fancyhdr}
+
+\pagestyle{fancy}
+\graphicspath{ {images/} }
+\newcommand{\true}{$T$}
+\newcommand{\false}{$F$}
+\newcommand{\ans}{\textit{Answer: }}
+\newcommand{\prf}{\textbf{Proof:}}
+\newenvironment{question}[2][Question]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+
+\makeatletter
+\renewcommand*\env@matrix[1][*\c@MaxMatrixCols c]{%
+  \hskip -\arraycolsep
+  \let\@ifnextchar\new@ifnextchar
+  \array{#1}}
+\makeatother
+
+\begin{pycode}
+import sympy
+import numpy as np
+
+import sys
+
+sys.path.append('..')
+import utils
+
+myprint = utils.printing.MyPrint(pytex) 
+myalgo = utils.algorithms.Algorithms(pytex) 
+\end{pycode}
+
+
+\title{MA 351} 
+\author{Elnard Utiushev}
+\rhead{Elnard Utiushev}
+\lhead{MA 351}
+% \lfoot{Elnard Utiushev}
+
+\begin{document}
+
+\maketitle
+
+\section{Section 1.1}
+\subsection{True/False}
+
+\begin{question}{1.1}
+  A subset of a linearly independent set is linearly independent.
+  
+  \ans True, since none of the elements in the subset are linear combinations. 
+\end{question} 
+
+\begin{question}{1.2}
+  A subset of a linearly dependent set is linearly dependent. 
+
+  \ans False, for example, lets take this linearly dependent set and remove 
+  the last element. The set will no longer be lineary dependant.
+  $$S = \Big\{
+    \py{myprint([1, 2])},
+    \py{myprint([4, 3])},
+    \py{myprint([5, 1])},
+    \py{myprint([10, 6])}
+  \Big\}
+  $$
+\end{question}
+
+\begin{question}{1.3}
+  A set that contains a linearly independent set is linearly independent.
+
+  \ans False
+\end{question}
+
+\begin{question}{1.4}
+  A set that contains a linearly dependent set is linearly dependent.
+
+  \ans False
+\end{question}
+
+\begin{question}{1.5}
+  If a set of elements of a vector space is linearly dependent, then each element
+  of the set is a linear combination of the other elements of the set.
+
+  \ans True
+\end{question}
+
+\begin{question}{1.8}
+  If $\{X, A_1, A_2, A_3\}$ is linearly dependent then $X$ is in the span of $A_1$, $A_2$, and $A_3$.
+
+  \ans True
+\end{question}
+
+\subsection{Exercises}
+
+\begin{question}{1.2}
+  Each of the following sets of matrices is linearly dependent. Demonstrate this 
+  by explicitly exhibiting one of the elements of the set as a linear
+  combination of the others. You should be able to find the constants by inspection (guessing).
+
+\begin{enumerate}[label=\alph*]
+  \item $
+    \py{myprint([[1, 1, 2]])} + 2*\py{myprint([[0, 0, 1]])} = \py{myprint([[1, 1, 4]])}
+  $
+
+  \item $
+    \py{myprint([[1,0,0]])}
+    + 2 * \py{myprint([[0,1,0]])}
+    + 3 * \py{myprint([[0,0,1]])}
+    = \py{myprint([[1,2,3]])}
+  $
+
+  \item $
+    0 * \py{myprint([[0, 0],
+                 [1, 0]])}
+    + \py{myprint([[1, 0],
+                 [0, 0]])}
+    + 2 * \py{myprint([[0, 1],
+                       [0, 0]])}
+    = \py{myprint([[1, 2],
+                   [0, 0]])}
+  $
+
+  \item $
+  -1 *\py{myprint([[1],
+               [2],
+               [3]])}
+  + \py{myprint([[4],
+                   [5],
+                   [6]])}
+  + 0 * \py{myprint([[9],
+                   [12],
+                   [15]])}
+  = \py{myprint([[3],
+               [3],
+               [3]])}
+  $
+
+  \item $
+  2 * \py{myprint([[1, 0], [0, 0]])}
+  + \py{myprint([[0, 1], [0, 0]])}
+  + 3 * \py{myprint([[0, 0], [1, 0]])}
+  -4 * \py{myprint([[0, 0], [0, 1]])}
+  = \py{myprint([[2, 1], [3, -4]])}
+  $
+
+  \item $
+  -3 * \py{myprint([[3, -1, 2], [0, 1, 4]])}
+  = \py{myprint([[-9, 3, -6], [0, -3, -12]])}
+  $
+
+  \item $
+  0 * \py{myprint([[1, 1], [2, 3]])}
+  + \py{myprint([[1, 1], [0, 1]])}
+  - \py{myprint([[1, 2], [0, 0]])}
+  = \py{myprint([[0, -1], [0, 1]])}
+  $
+\end{enumerate}
+\end{question}
+
+\begin{question}{1.8}
+  Verify the Remark following Example 1.2 on page 8, that is, show that A1 is not a linear combination of A2, A3, and A4.
+
+  \ans It is not a linear combination since there is no way to get $A_{1_{21}} = 1$ 
+  by summing and scaling zeroes.
+\end{question}
+
+\begin{question}{1.10}
+  Prove that the rows of the following matrix are linearly independent. 
+  \begin{pycode}
+A = np.array([[1, 2, 3], [0, 5, 6], [0, 0, 8]])
+  \end{pycode}
+
+  $$A = \py{myprint(A)}$$
+
+  \ans 
+  \begin{align*}
+    A_3 &= xA_1 + yA_2 \\
+    \py{myprint(A[2, :])} &= x\py{myprint(A[0, :])} + y\py{myprint(A[1, :])} \\
+      &= 0 \py{myprint(A[0, :])} + y \py{myprint(A[1, :])} & \text{Since it is the only way to get 0 in } A_{3_1} \\ 
+      &= 0 \py{myprint(A[0, :])} + 0 \py{myprint(A[1, :])} & \text{Since it is the only way to get 0 in } A_{3_2}
+  \end{align*}
+
+  Same reasoning can be used to prove that $A_2 \neq xA_1 + yA_3$ and $A_1 \neq xA_2 + yA_3$.
+\end{question}
+
+\begin{question}{1.19}
+  For each of the following sets of functions either find a function $f (x)$ in their
+  span such that $f (x) > 0$ for all $x$ or prove that no such function exists.
+
+  \begin{enumerate}[label=\alph*]
+    \item $\{\sin{x}, 1\}$ \\
+    \ans Since $\forall x, -1 \leq \sin{x} \leq 1$, $f(x) = \sin{x} + 2 * 1 > 0$ 
+
+    \item $\{\cos{x}, 1\}$ \\
+    \ans Since $\forall x, -1 \leq \cos{x} \leq 1$, $f(x) = \cos{x} + 2 * 1 > 0$ 
+
+    \item $\{\sin{x}, \cos{x}\}$ \\
+    \ans It is not possible. $f(x) = c_1 \sin{x} + c_2 \cos{x}$, since $f(x) > 0$, 
+    $f(0) = c_2 > 0, f(\pi) = -c_2 > 0$ which is not possible. 
+  \end{enumerate}
+  
+\end{question}
+
+\begin{question}{1.23}
+  Let X, Y, and Z be as shown. Give four matrices (reader’s choice) that belong to their span. Give a matrix that does not belong to their span.
+
+  \begin{pycode}
+A = {}
+A['X'] = np.array([[1, 2], [0, 3]])
+A['Y'] = np.array([[2, -1], [0, 0]])
+A['Z'] = np.array([[1, 1], [0, 1]])
+  \end{pycode}
+  
+  $$\py{myprint.print_dict_of_arrays(A)}$$
+
+  \ans \\
+  Matrices in their span:
+  $$\py{myprint.print_list_of_arrays([
+    A['X'] + A['Y'] + A['Z'],
+    A['X'] + 3 * A['Y'] + A['Z'],
+    A['X'] + A['Y'] + 0 * A['Z'],
+    3 * A['X'] + A['Y'] + 0 * A['Z']
+  ])}$$
+  Matrix not in their span:
+  $$\py{myprint([[0, 0], [1, 0]])}$$
+ 
+\end{question}
+
+\begin{question}{1.30}
+  Construct an example of your own choice of a 4 × 4 matrix with linearly dependent columns having all of its entries nonzero.
+
+  \ans 
+  $$\py{myprint([
+    [1, 2, 3, 6],
+    [1, 2, 3, 6],
+    [1, 2, 3, 6],
+    [1, 2, 3, 6]
+  ])}$$
+  
+\end{question}
+
+\section{Section 1.2}
+\subsection{True/False}
+
+\begin{question}{1.13}
+  The solution set to a system of three equations in three unknowns cannot be a plane.
+
+  \ans False
+\end{question}
+
+\begin{question}{1.14}
+  A system of linear equations cannot have only two solutions.
+  
+  \ans True
+\end{question}
+
+\begin{question}{1.16}
+  A system of four equations in four unknowns always has a solution.
+  
+  \ans False
+\end{question}
+
+
+\subsection{Exercises}
+
+\begin{question}{1.49}
+  One of these vectors is a solution to the system below and one is not. Which is which?
+  \begin{pycode}
+A = {
+  'X': np.array([1, 1, 1, 1]),
+  'Y': np.array([1, 2, -1, 1])
+}
+B = np.array([
+  [4, -2, -1, -1],
+  [1, 3, -2, -2]
+])
+  \end{pycode}
+
+  \begin{gather*}
+    \py{myprint.print_dict_of_arrays(A)} \\
+    4x - 2y - z - w = 0 \\
+    x + 3y - 2z - 2w = 0
+  \end{gather*}
+
+  \ans Lets rewrite our system as a matrix. 
+  $$\py{myprint(B)}$$
+  Now we can check if our vectors are solutions to this system:
+  \begin{align*}
+    \py{myprint(B)}X = \py{myprint(B)}\py{myprint(A['X'])}
+     = \py{myprint(np.matmul(B, A['X']))} && X \text{ is a solution} \\
+    \py{myprint(B)}Y = \py{myprint(B)}\py{myprint(A['Y'])}
+     = \py{myprint(np.matmul(B, A['Y']))} && Y \text{ is not a solution} 
+  \end{align*}
+\end{question}
+
+\begin{question}{1.55}
+For each system: (i) Write the augmented matrix A. (ii) Find all solutions (if any exist). 
+Express your answer in parametric form and give the translation vector and the spanning 
+vectors. State whether the solution is a line or plane or neither. (iii) If one of the rows 
+the solution of the augmented matrix becomes zero during process, explicitly exhibit one row 
+of A as a linear combination of the other rows.
+
+\begin{pycode}
+s = sympy.var('s')
+k = sympy.var('k')
+\end{pycode}
+
+
+\begin{enumerate}[label=\alph*]
+  \item
+\begin{pycode}
+A = np.array([
+  [1, -3, 2],
+  [-2, 6, -4]
+])
+sol, ops = myalgo.rref(A)
+  \end{pycode}
+  \begin{align*}
+    \py{ops}
+  \end{align*}
+
+  Solution: Line, $
+  \py{myprint([['x'], ['y']])} 
+  = \py{myprint([['2 + 3*s'], ['s']])} 
+  = \py{myprint([[3], [1]])} * s + \py{myprint([[2], [0]])}
+  $ \\
+  Linear combination: $R_2 = -2R_1$
+
+  \item \begin{pycode}
+A = np.array([
+  [1, 3, 1, 1],
+  [2, 4, 7, 2],
+  [3, 10, 5, 7]
+])
+sol, ops = myalgo.rref(A)
+  \end{pycode}
+  \begin{align*}
+    \py{ops}
+  \end{align*}
+
+  Solution: Point, $\py{myprint(sol[:, -1])}$ 
+
+  \item \begin{pycode}
+A = np.array([
+  [1, 3, 1, 1],
+  [2, 4, 7, 2],
+  [4, 10, 9, 4]
+])
+sol, ops = myalgo.rref(A)
+  \end{pycode}
+  \begin{align*}
+    \py{ops}
+  \end{align*}
+
+  Solution: Line, $
+  \py{myprint([['x'], ['y'], ['z']])} 
+  = \py{myprint([['1-(17/2)*s'], ['(5/2)*s'], ['s']])} 
+  = \py{myprint([['-(17/2)'], ['(5/2)'], ['1']])} * s + \py{myprint([[1], [0], [0]])}
+  $ \\
+  Linear combination: $R_3 = 2R_1 + R_2$
+
+  \item \begin{pycode}
+A = np.array([
+  [1, 3, 1, 1],
+  [2, 4, 7, 2],
+  [4, 10, 9, 7]
+])
+sol, ops = myalgo.rref(A)
+  \end{pycode}
+  \begin{align*}
+    \py{ops}
+  \end{align*}
+
+  Solution: Inconsistent
+
+  \item \begin{pycode}
+A = np.array([
+  [1, 2, 1, 0, 1],
+  [0, 1, 4, 3, 2],
+  [0, 0, 2, 2, 4]
+])
+sol, ops = myalgo.rref(A)
+  \end{pycode}
+  \begin{align*}
+    \py{ops}
+  \end{align*}
+
+  Solution: Line, $
+  \py{myprint([['x_1'], ['x_2'], ['x_3'], ['x_4']])} 
+  = \py{myprint([['11 - s'], ['-6 + s'], ['2 - s'], ['s']])} 
+  = \py{myprint([['-1'], ['1'], ['-1'], [1]])} * s + \py{myprint([[11], [-6], [2], [0]])}
+  $ 
+
+  \item \begin{pycode}
+A = np.array([
+  [1, -1, 2, -2, 1],
+  [2, 1, 0, 3, 4],
+  [2, 3, 2, 0, 6]
+])
+sol, ops = myalgo.rref(A)
+  \end{pycode}
+  \begin{align*}
+    \py{ops}
+  \end{align*}
+
+  Solution: Line, $
+  \py{myprint(['x_1', 'x_2', 'x_3', 'x_4'])} 
+  = \py{myprint([
+      sol[0, 4]-sol[0, 3] * s,
+      sol[1, 4]-sol[1, 3] * s,
+      sol[2, 4]-sol[2, 3] * s,
+      s
+    ])} 
+  = \py{myprint([
+      -sol[0, 3],
+      -sol[1, 3],
+      -sol[2, 3],
+      1
+    ])} * s + \py{myprint([
+      sol[0, 4],
+      sol[1, 4],
+      sol[2, 4],
+      0
+    ])}
+  $
+
+  \item \begin{pycode}
+A = np.array([
+  [3, 7, 2, 1],
+  [1, -1, 1, 2],
+  [5, 5, 4, 5]
+])
+sol, ops = myalgo.rref(A)
+  \end{pycode}
+  \begin{align*}
+    \py{ops}
+  \end{align*}
+
+  Solution: Line, $
+  \py{myprint(['x', 'y', 'z'])} 
+  = \py{myprint([
+      sol[0, 3]-sol[0, 2] * s,
+      sol[1, 3]-sol[1, 2] * s,
+      s
+    ])} 
+  = \py{myprint([
+      -sol[0, 2],
+      -sol[1, 2],
+      1
+    ])} * s + \py{myprint([
+      sol[0, 3],
+      sol[1, 3],
+      0
+    ])}
+  $ \\
+  Linear combination: $R_3 = R_1 + 2R_2$
+
+  \item \begin{pycode}
+A = np.array([
+  [2, -3, 2, 1],
+  [1, -6, 1, 2],
+  [-1, -3, -1, 1]
+])
+sol, ops = myalgo.rref(A)
+  \end{pycode}
+  \begin{align*}
+    \py{ops}
+  \end{align*}
+
+  Solution: Plane, $
+  \py{myprint(['x', 'y', 'z'])} 
+  = \py{myprint([
+      's',
+      sol[1, 3],
+      'k'
+    ])} 
+  = \py{myprint([1, 0, 0])} * s
+  + \py{myprint([0, 0, 1])} * k
+  + \py{myprint([0, sol[1, 3], 0])}
+  $ \\
+  Linear combination: $R_3 = R_2 - R_1$
+
+  \item \begin{pycode}
+A = np.array([
+  [2, 3, -1, -2],
+  [1, -1, 1, 2],
+  [2, 3, 4, 5]
+])
+sol, ops = myalgo.rref(A)
+  \end{pycode}
+  \begin{align*}
+    \py{ops}
+  \end{align*}
+
+  Solution: Point, $
+  \py{myprint(['x', 'y', 'z'])} 
+  = \py{myprint(sol[:, 3])} 
+  $ 
+
+  \item \begin{pycode}
+A = np.array([
+  [1, 1, 1, 1, 1],
+  [2, -2, 1, 2, 3],
+  [2, 6, 3, 2, 1],
+  [5, -3, 3, 5, 7]
+])
+sol, ops = myalgo.rref(A)
+  \end{pycode}
+  \begin{align*}
+    \py{ops}
+  \end{align*}
+
+  Solution: Plane, $
+  \py{myprint(['x', 'y', 'z', 'w'])} 
+  = \py{myprint([
+      sol[0, 4]-sol[0, 2] * k - s,
+      sol[1, 4]-sol[1, 2] * k,
+      k,
+      s
+    ])} 
+  = \py{myprint([
+      -1,
+      0,
+      0,
+      1
+    ])} * s + \py{myprint([
+      -sol[0, 2],
+      -sol[1, 2],
+      1,
+      0
+    ])} * k + \py{myprint([
+      sol[0, 4],
+      sol[1, 4],
+      0,
+      0
+    ])}
+  $ \\ 
+  Linear combination: $R_3 = 4R_1 - R_2$, $R_4 = R_1 + 2R_2$
+
+  \item \begin{pycode}
+A = np.array([
+  [1, 1, 1, 1, 1],
+  [2, -2, 1, 2, 3],
+  [2, 6, 3, 2, 1],
+  [5, -3, 3, 5, 8]
+])
+sol, ops = myalgo.rref(A)
+  \end{pycode}
+  \begin{align*}
+    \py{ops}
+  \end{align*}
+
+  Solution: Inconsistent \\
+  Linear combination: $R_3 = 4R_1 - R_2$
+
+  \item \begin{pycode}
+A = np.array([
+  [1, 2, -1, -1, 1],
+  [-3, -3, 1, 10, -6],
+  [-5, -4, 1, 18, -11],
+  [-2, 5, -4, 16, -11]
+])
+sol, ops = myalgo.rref(A)
+  \end{pycode}
+  \begin{align*}
+    \py{ops}
+  \end{align*}
+
+  Solution: Line, $
+  \py{myprint(['x', 'y', 'z', 'w'])} 
+  = \py{myprint([
+      sol[0, 4]-sol[0, 2] * s,
+      sol[1, 4]-sol[1, 2] * s,
+      s,
+      0
+    ])} 
+  = \py{myprint([
+      -sol[0, 2],
+      -sol[1, 2],
+      1,
+      0
+    ])} * s + \py{myprint([
+      sol[0, 4],
+      sol[1, 4],
+      0,
+      0
+    ])}
+  $
+
+\end{enumerate}
+  
+\end{question}
+
+\begin{question}{1.57}
+  Create an example of a system of five equations in five unknowns that has rank 2. How about one with rank 3? Rank 1?
+
+  \ans 
+  
+  \begin{pycode}
+A = np.random.randint(1, 10000, (1, 6))
+B = np.random.randint(1, 10000, (1, 6))
+C = np.random.randint(1, 10000, (1, 6))
+  \end{pycode}
+
+  \begin{align*}
+    \py{myprint.print_augmented_matrix_num(
+      np.r_[A, A * 10, A * 7, A * 2, A * 4]
+    )} & & \text{Rank 1} \\
+    \py{myprint.print_augmented_matrix_num(
+      np.r_[A, B, A - B, A * 2, B * 4]
+    )} & & \text{Rank 2} \\
+    \py{myprint.print_augmented_matrix_num(
+      np.r_[A, B, C, A * 2, B * 4]
+    )} & & \text{Rank 3}
+  \end{align*}
+  
+\end{question}
+
+% \begin{pycode}
+% A = np.random.randint(1, 100, (3, 3))
+% I = np.eye(3).astype(np.int)
+% C = np.c_[A, I]
+% sol, ops = myalgo.rref(C)
+% \end{pycode}
+
+% \begin{align*}
+%   \py{ops} 
+% \end{align*}
+
+\end{document}
