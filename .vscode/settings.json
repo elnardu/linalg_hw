@@ -32,8 +32,7 @@
             "name": "pythontex",
             "command": "pythontex",
             "args": [
-                "--runall",
-                "true",
+                "--rerun", "always",
                 "%DOCFILE%"
             ]
         }
