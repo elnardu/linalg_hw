@@ -56,24 +56,29 @@ class MyPrint():
         shape = combined.shape
         latex_code = latex_code.replace(
             '\\begin{bmatrix}',
-            ('\\begin{bmatrix}[' + ('c' * (shape[1] - num)) + '|' + ('c' * num) + ']')
+            ('\\begin{bmatrix}[' + ('c' *
+                                    (shape[1] - num)) + '|' + ('c' * num) + ']')
         )
         latex_code = latex_code.replace(
             '\\begin{smallmatrix}',
-            ('\\begin{smallmatrix}[' + ('c' * (shape[1] - num)) + '|' + ('c' * num) + ']')
+            ('\\begin{smallmatrix}[' + ('c' *
+                                        (shape[1] - num)) + '|' + ('c' * num) + ']')
         )
         return latex_code
 
-    def print_augmented_matrix_num(self, A, num=1):
+    def print_augmented_matrix_num(self, A, sep_col=1):
         latex_code = self.print_object(A)
 
         shape = A.shape
-        latex_code = latex_code.replace(
-            '\\begin{bmatrix}',
-            ('\\begin{bmatrix}[' + ('c' * (shape[1] - num)) + '|' + ('c' * num) + ']')
-        )
-        latex_code = latex_code.replace(
-            '\\begin{smallmatrix}',
-            ('\\begin{smallmatrix}[' + ('c' * (shape[1] - num)) + '|' + ('c' * num) + ']')
-        )
+        if sep_col:
+            latex_code = latex_code.replace(
+                '\\begin{bmatrix}',
+                ('\\begin{bmatrix}[' + ('c' * (shape[1] -
+                                               sep_col)) + '|' + ('c' * sep_col) + ']')
+            )
+            latex_code = latex_code.replace(
+                '\\begin{smallmatrix}',
+                ('\\begin{smallmatrix}[' + ('c' * (shape[1] -
+                                                   sep_col)) + '|' + ('c' * sep_col) + ']')
+            )
         return latex_code
