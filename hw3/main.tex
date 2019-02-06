@@ -1,0 +1,705 @@
+\documentclass[letterpaper]{article}
+
+%% Sets page size and margins
+\usepackage[letterpaper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+ 
+%% Useful packages
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{mathtools}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{pythontex}
+\usepackage{lastpage}
+\usepackage{fancyhdr}
+
+\pagestyle{fancy}
+\graphicspath{ {images/} }
+\newcommand{\true}{$T$}
+\newcommand{\false}{$F$}
+\newcommand{\ans}{\textit{Answer: }}
+\newcommand{\prf}{\textbf{Proof:}}
+\newenvironment{question}[2][Question]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+
+% Fancy matrix
+\makeatletter
+\renewcommand*\env@matrix[1][*\c@MaxMatrixCols c]{%
+  \hskip -\arraycolsep
+  \let\@ifnextchar\new@ifnextchar
+  \array{#1}}
+\makeatother
+
+% My scripts setup
+\begin{pycode}
+import sympy
+import numpy as np
+
+import sys
+sys.path.append('..')
+
+from utils import Utils
+utils = Utils(pytex)
+sympify = np.vectorize(sympy.sympify)
+\end{pycode}
+
+\newcommand{\printobj}[1]{\py{utils.print.print_object(#1)}}
+
+\title{MA 351, HW 3} 
+\lhead{MA 351, HW 3}
+
+\author{Elnard Utiushev}
+\rhead{Elnard Utiushev}
+\cfoot{\thepage\ of \pageref{LastPage}}
+
+\begin{document}
+
+\maketitle
+
+Section 2.1: True/False: 2.2, 2.3, 2.4; Exercises: 2.1, 2.7, 2.8 \\
+Section 2.2: True/False: 2.10, 2.11, 2.12, 2.15, 2.16, 2.17, 2.19; Exercises: 2.32, 2.35, 2.36
+
+\section{Section 2.1}
+\subsection{True/False}
+
+\begin{question}{2.2}
+    I start with a certain 4×6 matrix A and reduce, obtaining
+    $$M = \left[ \begin{array} { c c c c c c } { 1 } & { 0 } & { 1 } & { 1 } & { 0 } & { 0 } \\ { 0 } & { 1 } & { 1 } & { 3 } & { - 2 } & { 3 } \\ { 0 } & { 0 } & { 0 } & { 0 } & { 1 } & { 1 } \\ { 0 } & { 0 } & { 0 } & { 0 } & { 0 } & { 0 } \end{array} \right]$$
+
+    Which of the following statements about $A$ are guaranteed to be true, where $A_i$ denotes the ith column of $A$.
+
+    \begin{enumerate}[label=\textbf{(\alph*)}]
+        \item The columns of A are linearly independent \\ 
+        \ans False, since we got a couple of free variables in $M$
+
+        \item $A_4$ is a linear combination of $A_1$, $A_2$, and $A_5$ \\
+        \ans True, $A_4 = A_1 + 3A_2 + 0A_5$
+
+        \item $A_3$ is a linear combination of $A_1$, $A_2$, and $A_5$ \\
+        \ans True, $A_3 = A_1 + A_2 + 0A_5$
+
+        \item $A_3$ is a linear combination of $A_1$ and $A_2$ \\
+        \ans True, $A_3 = A_1 + A_2$
+
+        \item $A_4 = A_1 - 2A_2$ \\ 
+        \ans False, $A_4 \neq A_1 - 2A_2$
+    \end{enumerate}
+
+\end{question}
+
+\begin{question}{2.3}
+    Suppose that A and B are n × n matrices that both have linearly independent
+    columns. Then A and B have the same reduced echelon form.
+
+    \ans False, 
+
+    $$
+    rref \printobj{[
+        [1, 2, 0],
+        [0, 1, 0],
+        [0, 0, 1]
+    ]}
+    \neq
+    rref \printobj{[
+        [1, 5, 0],
+        [0, 1, 0],
+        [0, 0, 1]
+    ]}
+    $$
+
+\end{question}
+
+\begin{question}{2.4}
+    Suppose that A is an n×n matrix and B is an n×1 column vector such that 
+    the equation $AX = B$ has an infinite number of solutions. Then the columns
+    of A are linearly dependent.
+
+    \ans True, in order of the equation to have an infinite number of solutions
+    it should have at least one free variable in its row echelon form, which means 
+    that colums of A are linearly dependent
+\end{question}
+
+\subsection{Exercises}
+
+\begin{question}{2.1}
+    Test the given matrices for linear dependence using the test for linear 
+    independence. Then find a basis for their span and express the other vectors 
+    (if there are any) as linear combinations of the basis elements.
+
+\begin{pycode}
+
+problems = [
+    [
+        [[1], [2], [1], [2]],
+        [[2], [3], [-1], [0]],
+        [[1], [0], [1], [0]]
+    ],
+    [
+        [[1], [0], [0]],
+        [[0], [1], [0]],
+        [[0], [0], [1]]
+    ],
+    [
+        [[1, 2, 1]],
+        [[3, -1, 2]],
+        [[7, -7, 4]]
+    ],
+    [
+        [[2, 3], [0, 1]],
+        [[1, 3], [0, 0]],
+        [[17, 0], [9, 1]],
+        [[0, 5], [0, 6]]
+    ],
+    [
+        [[2, -2], [3, -1], [0, 2]],
+        [[4, -1], [2, 3], [1, 0]],
+        [[8, -2], [4, 6], [2, 0]]
+    ],
+    [
+        [[1, 1], [4, 3]],
+        [[2, 1], [3, 0]],
+        [[2, 1], [2, -1]],
+        [[1, 1], [6, 5]]
+    ],
+    [
+        [[1, 2], [3, 2]],
+        [[2, 1], [3, 4]],
+        [[5, -2], [3, 10]]
+    ],
+    [
+        [[1, 0], [0, 0]],
+        [[0, 1], [0, 0]],
+        [[0, 0], [1, 0]],
+        [[0, 0], [0, 1]]
+    ],
+    [
+        [[1], [2], [3], [1]],
+        [[2], [0], [1], [0]],
+        [[1], [1], [1], [1]]
+    ],
+    [
+        [[4, 2, -1]],
+        [[3, 3, 2]],
+        [[1, 0, 1]]
+    ],
+    [
+        [[3], [2], [4], [5]],
+        [[-4], [-3], [-5], [-6]],
+        [[2], [-3], [7], [12]]
+    ]
+]
+
+\end{pycode}
+
+\begin{enumerate}[label=\textbf{(\alph*)}]
+    \begin{pycode}
+problem = problems[0]
+dep_system = np.column_stack(tuple(map(np.ravel, problem)))
+rref, _ = utils.algorithms.rref(dep_system)
+pivots = utils.algorithms.get_pivots(rref)
+basis = ', '.join(map(lambda pivot: '$A_{}$'.format(pivot[0] + 1), pivots))
+    \end{pycode}
+    \item
+    $$\py{utils.print.print_list_of_arrays(problem)}$$
+    \ans 
+    $$\printobj{dep_system} \rightarrow \printobj{rref}$$
+    Basis: \py{basis} \\
+    \py{'Independent' if len(pivots) == rref.shape[1] else 'Dependent'}
+% -----------------------
+    \begin{pycode}
+problem = problems[1]
+dep_system = np.column_stack(tuple(map(np.ravel, problem)))
+rref, _ = utils.algorithms.rref(dep_system)
+pivots = utils.algorithms.get_pivots(rref)
+basis = ', '.join(map(lambda pivot: '$A_{}$'.format(pivot[0] + 1), pivots))
+    \end{pycode}
+    \item
+    $$\py{utils.print.print_list_of_arrays(problem)}$$
+    \ans 
+    $$\printobj{dep_system} \rightarrow \printobj{rref}$$
+    Basis: \py{basis} \\ 
+    \py{'Independent' if len(pivots) == rref.shape[1] else 'Dependent'}
+% -----------------------
+    \begin{pycode}
+problem = problems[2]
+dep_system = np.column_stack(tuple(map(np.ravel, problem)))
+rref, _ = utils.algorithms.rref(dep_system)
+pivots = utils.algorithms.get_pivots(rref)
+basis = ', '.join(map(lambda pivot: '$A_{}$'.format(pivot[0] + 1), pivots))
+    \end{pycode}
+    \item
+    $$\py{utils.print.print_list_of_arrays(problem)}$$
+    \ans 
+    $$\printobj{dep_system} \rightarrow \printobj{rref}$$
+    Basis: \py{basis} \\
+    Linear combination: $A_3 = -2A_1 + 3A_2$ \\
+    \py{'Independent' if len(pivots) == rref.shape[1] else 'Dependent'}
+% -----------------------
+    \begin{pycode}
+problem = problems[3]
+dep_system = np.column_stack(tuple(map(np.ravel, problem)))
+rref, _ = utils.algorithms.rref(dep_system)
+pivots = utils.algorithms.get_pivots(rref)
+basis = ', '.join(map(lambda pivot: '$A_{}$'.format(pivot[0] + 1), pivots))
+    \end{pycode}
+    \item
+    $$\py{utils.print.print_list_of_arrays(problem)}$$
+    \ans 
+    $$\printobj{dep_system} \rightarrow \printobj{rref}$$
+    Basis: \py{basis} \\
+    \py{'Independent' if len(pivots) == rref.shape[1] else 'Dependent'}
+% -----------------------
+    \begin{pycode}
+problem = problems[4]
+dep_system = np.column_stack(tuple(map(np.ravel, problem)))
+rref, _ = utils.algorithms.rref(dep_system)
+pivots = utils.algorithms.get_pivots(rref)
+basis = ', '.join(map(lambda pivot: '$A_{}$'.format(pivot[0] + 1), pivots))
+    \end{pycode}
+    \item
+    $$\py{utils.print.print_list_of_arrays(problem)}$$
+    \ans 
+    $$\printobj{dep_system} \rightarrow \printobj{rref}$$
+    Basis: \py{basis} \\
+    Linear combination: $A_3 = 0A_1 + 2A_2$ \\
+    \py{'Independent' if len(pivots) == rref.shape[1] else 'Dependent'}
+% -----------------------
+    \begin{pycode}
+problem = problems[5]
+dep_system = np.column_stack(tuple(map(np.ravel, problem)))
+rref, _ = utils.algorithms.rref(dep_system)
+pivots = utils.algorithms.get_pivots(rref)
+basis = ', '.join(map(lambda pivot: '$A_{}$'.format(pivot[0] + 1), pivots))
+    \end{pycode}
+    \item
+    $$\py{utils.print.print_list_of_arrays(problem)}$$
+    \ans 
+    $$\printobj{dep_system} \rightarrow \printobj{rref}$$
+    Basis: \py{basis} \\
+    Linear combination: $A_4 = A_1 + 2A_2 - 2A_3$ \\ 
+    \py{'Independent' if len(pivots) == rref.shape[1] else 'Dependent'}
+% -----------------------
+    \begin{pycode}
+problem = problems[6]
+dep_system = np.column_stack(tuple(map(np.ravel, problem)))
+rref, _ = utils.algorithms.rref(dep_system)
+pivots = utils.algorithms.get_pivots(rref)
+basis = ', '.join(map(lambda pivot: '$A_{}$'.format(pivot[0] + 1), pivots))
+    \end{pycode}
+    \item
+    $$\py{utils.print.print_list_of_arrays(problem)}$$
+    \ans 
+    $$\printobj{dep_system} \rightarrow \printobj{rref}$$
+    Basis: \py{basis} \\
+    Linear combination: $A_3 = -3A_1 + 4A_2$ \\
+    \py{'Independent' if len(pivots) == rref.shape[1] else 'Dependent'}
+% -----------------------
+    \begin{pycode}
+problem = problems[7]
+dep_system = np.column_stack(tuple(map(np.ravel, problem)))
+rref, _ = utils.algorithms.rref(dep_system)
+pivots = utils.algorithms.get_pivots(rref)
+basis = ', '.join(map(lambda pivot: '$A_{}$'.format(pivot[0] + 1), pivots))
+    \end{pycode}
+    \item
+    $$\py{utils.print.print_list_of_arrays(problem)}$$
+    \ans 
+    $$\printobj{dep_system} \rightarrow \printobj{rref}$$
+    Basis: \py{basis} \\
+    \py{'Independent' if len(pivots) == rref.shape[1] else 'Dependent'}
+% -----------------------
+    \begin{pycode}
+problem = problems[8]
+dep_system = np.column_stack(tuple(map(np.ravel, problem)))
+rref, _ = utils.algorithms.rref(dep_system)
+pivots = utils.algorithms.get_pivots(rref)
+basis = ', '.join(map(lambda pivot: '$A_{}$'.format(pivot[0] + 1), pivots))
+    \end{pycode}
+    \item
+    $$\py{utils.print.print_list_of_arrays(problem)}$$
+    \ans 
+    $$\printobj{dep_system} \rightarrow \printobj{rref}$$
+    Basis: \py{basis} \\
+    \py{'Independent' if len(pivots) == rref.shape[1] else 'Dependent'}
+% -----------------------
+    \begin{pycode}
+problem = problems[9]
+dep_system = np.column_stack(tuple(map(np.ravel, problem)))
+rref, _ = utils.algorithms.rref(dep_system)
+pivots = utils.algorithms.get_pivots(rref)
+basis = ', '.join(map(lambda pivot: '$A_{}$'.format(pivot[0] + 1), pivots))
+    \end{pycode}
+    \item
+    $$\py{utils.print.print_list_of_arrays(problem)}$$
+    \ans 
+    $$\printobj{dep_system} \rightarrow \printobj{rref}$$
+    Basis: \py{basis} \\
+    \py{'Independent' if len(pivots) == rref.shape[1] else 'Dependent'}
+% -----------------------
+    \begin{pycode}
+problem = problems[10]
+dep_system = np.column_stack(tuple(map(np.ravel, problem)))
+rref, _ = utils.algorithms.rref(dep_system)
+pivots = utils.algorithms.get_pivots(rref)
+basis = ', '.join(map(lambda pivot: '$A_{}$'.format(pivot[0] + 1), pivots))
+    \end{pycode}
+    \item
+    $$\py{utils.print.print_list_of_arrays(problem)}$$
+    \ans 
+    $$\printobj{dep_system} \rightarrow \printobj{rref}$$
+    Basis: \py{basis} \\
+    Linear combination: $A_3 = 18A_1 + 13A_2$ \\
+    \py{'Independent' if len(pivots) == rref.shape[1] else 'Dependent'}
+\end{enumerate}
+\end{question}
+
+\begin{question}{2.7}
+    Use the test for linear independence to prove that the rows of the following
+    3 × 6 matrix are linearly independent:
+
+    \begin{pycode}
+A = sympify(np.array([[1, 'a', 'b', 'c', 'd', 'e'], [0, 0, 1, 'f', 'g', 'h'], [0, 0, 0, 0, 1, 'k']]))
+rref, _ = utils.algorithms.rref(A.T)
+    \end{pycode}
+
+    $$A = \printobj{A}$$
+
+    \ans 
+    $$\printobj{A.T} \xrightarrow{rref} \printobj{rref}$$
+\end{question}
+
+\begin{question}{2.8}
+    Let $A = \left[ A _ { 1 } , A _ { 2 } , A _ { 3 } \right]$ be a $3 \times 3$
+    matrix with linearly independent columns $A _ { i }$ .
+
+    \begin{enumerate}[label=\textbf{(\alph*)}]
+        \item Explain why the row reduced form of $A$ is the following matrix $R$
+        $$
+        R = \left[ \begin{array} { l l l } { 1 } & { 0 } & { 0 } \\ { 0 } & { 1 } & { 0 } \\ { 0 } & { 0 } & { 1 } \end{array} \right]
+        $$
+
+        \ans Since columns are linearly independent, by presenting the matrix 
+        in rref, we solve dependency equation. Matrix $R$ shows that solution 
+        to that equation is all zeroes which means that columns are linearly 
+        independent
+
+        \item Let $A = \left[ A _ { 1 } , A _ { 2 } , A _ { 3 } , A _ { 4 } , A _ { 5 } \right]$
+        be a $3 \times 5$ matrix such that the first three
+        columns are linearly independent. Explain why the pivot columns must
+        be the first three. 
+
+        \ans Since the first three columns are linearly independent,
+        rref of $\left[ A _ { 1 } , A _ { 2 } , A _ { 3 }\right]$ will result
+        in no free variables, which means that the pivot columns will
+        be the first three
+    \end{enumerate}
+
+\end{question}
+ 
+
+\section{Section 2.2}
+\subsection{True/False}
+
+\begin{question}{2.10}
+    $\left\{ [ 17,6 , - 4 ] ^ { t } , [ 2,3,3 ] ^ { t } , [ 19,9 , - 1 ] ^ { t } \right\}$ 
+    does not span $\mathbb { R } ^ { 3 }$
+
+    \begin{pycode}
+A = np.array([17, 6, -4])
+B = np.array([2, 3, 3])
+C = np.array([19, 9, -1])
+dep_system = np.c_[A, B, C]
+rref, _ = utils.algorithms.rref(dep_system)
+pivots = utils.algorithms.get_pivots(rref)
+basis = ', '.join(map(lambda pivot: '$A_{}$'.format(pivot[0] + 1), pivots))
+    \end{pycode}
+
+    \ans True, because matrices are not linearly independent
+    $$\printobj{dep_system} \rightarrow \printobj{rref}$$
+    Basis: \py{basis}
+\end{question}
+
+\begin{question}{2.11}
+    $\left\{ [ 1,1 ] ^ { t } , [ 1,2 ] ^ { t } , [ 4,7 ] ^ { t } \right\}$ spans $\mathbb { R } ^ { 2 }$
+
+    \begin{pycode}
+A = np.array([1, 1])
+B = np.array([1, 2])
+C = np.array([4, 7])
+dep_system = np.c_[A, B, C]
+rref, _ = utils.algorithms.rref(dep_system)
+pivots = utils.algorithms.get_pivots(rref)
+basis = ', '.join(map(lambda pivot: '$A_{}$'.format(pivot[0] + 1), pivots))
+    \end{pycode}
+
+    \ans True, because first two matrices are linearly independent
+    $$\printobj{dep_system} \rightarrow \printobj{rref}$$
+    Basis: \py{basis}
+\end{question}
+
+\begin{question}{2.12}
+    Let $\mathcal { W }$ be a two-dimensional subspace of $\mathbb { R } ^ { 3 } .$ 
+    Then two of the following three
+    vectors span $\mathcal { W } : X = [ 1,0,0 ] ^ { t } , Y = [ 0,1,0 ] ^ { t } , Z = [ 0,0,1 ] ^ { t }$
+
+    \ans False, for example, let $\mathcal { W }$ be a two-dimensional subspace 
+    spanned by vectors $\printobj{[1, 0, 3]}, \printobj{[0, 1, 3]}$
+\end{question}
+
+\begin{question}{2.15}
+    Suppose that $\mathcal { W }$ is a four-dimensional subspace of
+    $\mathbb { R } ^ { 7 }$ and $X _ { 1 } , X _ { 2 } , X _ { 3 } ,$ and $X _ { 4 }$
+    are vectors that belong to $\mathcal { W } .$ Then $\left\{ X _ { 1 } , X _ { 2 } ,
+    X _ { 3 } , X _ { 4 } \right\}$ spans $\mathcal { W }$.
+
+    \ans False, since vectors $X _ { 1 } , X _ { 2 } , X _ { 3 } ,$ and $X _ { 4 }$
+    can be linearly dependent and still belong to $\mathcal { W }$
+\end{question}
+
+\begin{question}{2.16}
+    Suppose that $\left\{ X _ { 1 } , X _ { 2 } , X _ { 3 } , X _ { 4 } ,
+     X _ { 5 } \right\}$ spans a four-dimensional vector space $\mathcal { W }$ of
+    $\mathbb { R } ^ { 7 } .$ Then $\left\{ X _ { 1 } , X _ { 2 } , X _ { 3 } , 
+    X _ { 4 } \right\}$ also spans $\mathcal { W }$
+
+    \ans False, since vector space $\mathcal { W }$ is four-dimensional, one of 
+    the vectors $\left\{ X _ { 1 } , X _ { 2 } , X _ { 3 } , X _ { 4 } ,
+    X _ { 5 } \right\}$ is a linear combination of the others, but it is not guaranteed
+    that it is $X _ { 5 }$. 
+\end{question}
+
+\begin{question}{2.17}
+    Suppose that $S = \left\{ X _ { 1 } , X _ { 2 } , X _ { 3 } , X _ { 4 } , 
+    X _ { 5 } \right\}$ spans a four-dimensional subspace $\mathcal { W }$ of
+    $\mathbb { R } ^ { 7 } .$ Then $S$ contains a basis for $\mathcal { W } .$
+
+    \ans True
+\end{question}
+
+\begin{question}{2.19}
+    Suppose that $\mathcal { W }$ is a four-dimensional subspace of $\mathbb { R } ^ { 7 }$ that is spanned by
+    $\left\{ X _ { 1 } , X _ { 2 } , X _ { 3 } , X _ { 4 } \right\} .$ 
+    Then one of the $X _ { i }$ must be a linear combination of the others.
+
+    \ans False, since $\mathcal { W }$ is a four-dimensional subspace, so its basis
+    has exactly 4 elements. 
+\end{question}
+
+\subsection{Exercises}
+
+\begin{question}{2.32}
+    Prove that the given sets $\mathcal { W }$ are subspaces of $\mathbb { R } ^ { n }$ 
+    for the appropriate $n .$ Find
+    spanning sets for these spaces and find at least two different bases for each
+    space. Give the dimension of each space. 
+
+    \begin{enumerate}[label=\textbf{(\alph*)}]
+        \begin{pycode}
+problem = [
+    np.array([1, 2, 1, 1]),
+    np.array([1, 1, 1, 2]),
+    np.array([2, 3, 2, 3])
+]
+dep_system = np.column_stack(tuple(map(np.ravel, problem)))
+rref, _ = utils.algorithms.rref(dep_system)
+pivots = utils.algorithms.get_pivots(rref)
+basis = ', '.join(map(lambda pivot: '$A_{}$'.format(pivot[0] + 1), pivots))
+        \end{pycode}
+        \item $\mathcal { W } = \left\{ [ a + b + 2 c , 2 a + b + 3 c , a + b + 2 c , a + 2 b + 3 c ] ^ { t } | a , b , c \in \mathbb { R } \right\}$
+        
+        \ans 
+        $$\py{utils.print.print_list_of_arrays(problem)}$$
+        $$\printobj{dep_system} \rightarrow \printobj{rref}$$
+        Dimension: \printobj{len(pivots)} \\ 
+        Basis 1:  $\printobj{problem[0]}$, $\printobj{problem[1]}$ \\ 
+        Basis 2:  $\printobj{problem[0] * 2}$, $\printobj{problem[1] * 2}$
+% ----------------------
+        \begin{pycode}
+problem = [
+    np.array([1, 2, 1]),
+    np.array([0, 1, 1]),
+    np.array([2, 3, 1])
+]
+dep_system = np.column_stack(tuple(map(np.ravel, problem)))
+rref, _ = utils.algorithms.rref(dep_system)
+pivots = utils.algorithms.get_pivots(rref)
+basis = ', '.join(map(lambda pivot: '$A_{}$'.format(pivot[0] + 1), pivots))
+        \end{pycode}
+        \item $\mathcal { W } = \left\{ [ a + 2 c , 2 a + b + 3 c , a + b + c ] ^ { t } | a , b , c \in \mathbb { R } \right\}$
+        
+        \ans 
+        $$\py{utils.print.print_list_of_arrays(problem)}$$
+        $$\printobj{dep_system} \rightarrow \printobj{rref}$$
+        Dimension: \printobj{len(pivots)} \\ 
+        Basis 1:  $\printobj{problem[0]}$, $\printobj{problem[1]}$ \\ 
+        Basis 2:  $\printobj{problem[0] * 2}$, $\printobj{problem[1] * 2}$
+% ----------------------
+        \begin{pycode}
+problem = [
+    np.array([1, 2, 1]),
+    np.array([1, 1, 1]),
+    np.array([2, 3, 1])
+]
+dep_system = np.column_stack(tuple(map(np.ravel, problem)))
+rref, _ = utils.algorithms.rref(dep_system)
+pivots = utils.algorithms.get_pivots(rref)
+basis = ', '.join(map(lambda pivot: '$A_{}$'.format(pivot[0] + 1), pivots))
+        \end{pycode}
+        \item $\left\{ [ a + b + 2 c , 2 a + b + 3 c , a + b + c ] ^ { t } | a , b , c \in \mathbb { R } \right\}$
+        
+        \ans 
+        $$\py{utils.print.print_list_of_arrays(problem)}$$
+        $$\printobj{dep_system} \rightarrow \printobj{rref}$$
+        Dimension: \printobj{len(pivots)} \\ 
+        Basis 1:  $\printobj{problem[0]}$, $\printobj{problem[1]}$, $\printobj{problem[2]}$ \\ 
+        Basis 2:  $\printobj{problem[0] * 2}$, $\printobj{problem[1] * 2}$, $\printobj{problem[2] * 2}$
+% ----------------------
+        \begin{pycode}
+problem = [
+    np.array([1, -2, 6, 3]),
+    np.array([2, -2, 4, 1]),
+    np.array([-4, 2, 0, 3]),
+    np.array([5, -6, 14, 5])
+]
+dep_system = np.column_stack(tuple(map(np.ravel, problem)))
+rref, _ = utils.algorithms.rref(dep_system)
+pivots = utils.algorithms.get_pivots(rref)
+basis = ', '.join(map(lambda pivot: '$A_{}$'.format(pivot[0] + 1), pivots))
+        \end{pycode}
+        \item $\mathcal { W } = \{ [ a + 2 b - 4 c + 5 d , - 2 a - 2 b + 2 c - 6 d , 6 a + 4 b + 14 d, 3 a + b + 3 c + 5 d ] | a , b , c , d \in \mathbb { R } \}$
+        
+        \ans 
+        $$\py{utils.print.print_list_of_arrays(problem)}$$
+        $$\printobj{dep_system} \rightarrow \printobj{rref}$$
+        Dimension: \printobj{len(pivots)} \\ 
+        Basis 1:  $\printobj{problem[0]}$, $\printobj{problem[1]}$ \\ 
+        Basis 2:  $\printobj{problem[0] * 2}$, $\printobj{problem[1] * 2}$
+    \end{enumerate}
+\end{question}
+
+\begin{question}{2.35}
+    Find a basis and give the dimension for the following spaces of matrices $A$
+    
+    \begin{enumerate}[label=\textbf{(\alph*)}]
+        \item $2 \times 2 , A = A ^ { t }$
+        
+        \ans 
+        $$
+        \printobj{[
+            ['a', 'b'],
+            ['b', 'a']
+        ]}
+        $$
+
+        Dimension: 2 \\
+        Basis: $\printobj{[[1, 0], [0, 1]]}, \printobj{[[0, 1], [1, 0]]}$
+% ------------------------
+        \item $3 \times 3 , A = A ^ { t }$
+        
+        \ans 
+        $$
+        \printobj{[
+            ['a', 'b', 'c'],
+            ['b', 'd', 'e'],
+            ['c', 'e', 'f']
+        ]}
+        $$
+
+        Dimension: 6 \\
+        Basis: $
+        \printobj{[[1, 0, 0], [0, 0, 0], [0, 0, 0]]},
+        \printobj{[[0, 1, 0], [1, 0, 0], [0, 0, 0]]},
+        \printobj{[[0, 0, 1], [0, 0, 0], [1, 0, 0]]},
+        \printobj{[[0, 0, 0], [0, 1, 0], [0, 0, 0]]},
+        \printobj{[[0, 0, 0], [0, 0, 1], [0, 1, 0]]},
+        \printobj{[[0, 0, 0], [0, 0, 0], [0, 0, 1]]}
+        $
+% ------------------------
+        \item $2 \times 2 , A = - A ^ { t }$
+        
+        \ans 
+        $$
+        \printobj{[
+            [0, '-b'],
+            ['b', 0],
+        ]}
+        $$
+
+        Dimension: 1 \\
+        Basis: $
+        \printobj{[[0, -1], [1, 0]]}
+        $
+% ------------------------
+        \item $3 \times 3$ upper triangular.
+        
+        \ans 
+        $$
+        \printobj{[
+            ['a', 'b', 'c'],
+            [0, 'd', 'e'],
+            [0, 0, 'f']
+        ]}
+        $$
+
+        Dimension: 6 \\
+        Basis: $
+        \printobj{[[1, 0, 0], [0, 0, 0], [0, 0, 0]]},
+        \printobj{[[0, 1, 0], [0, 0, 0], [0, 0, 0]]},
+        \printobj{[[0, 0, 1], [0, 0, 0], [0, 0, 0]]},
+        \printobj{[[0, 0, 0], [0, 1, 0], [0, 0, 0]]},
+        \printobj{[[0, 0, 0], [0, 0, 1], [0, 0, 0]]},
+        \printobj{[[0, 0, 0], [0, 0, 0], [0, 0, 1]]}
+        $
+% ------------------------
+        \item $3 \times 3$ lower triangular.
+        
+        \ans 
+        $$
+        \printobj{sympify([
+            ['a', 'b', 'c'],
+            [0, 'd', 'e'],
+            [0, 0, 'f']
+        ]).T}
+        $$
+
+        Dimension: 6 \\
+        Basis: $
+        \printobj{sympify([[1, 0, 0], [0, 0, 0], [0, 0, 0]]).T},
+        \printobj{sympify([[0, 1, 0], [0, 0, 0], [0, 0, 0]]).T},
+        \printobj{sympify([[0, 0, 1], [0, 0, 0], [0, 0, 0]]).T},
+        \printobj{sympify([[0, 0, 0], [0, 1, 0], [0, 0, 0]]).T},
+        \printobj{sympify([[0, 0, 0], [0, 0, 1], [0, 0, 0]]).T},
+        \printobj{sympify([[0, 0, 0], [0, 0, 0], [0, 0, 1]]).T}
+        $
+    \end{enumerate}
+\end{question}
+
+\begin{question}{2.36}
+    Find a basis for the subspace of $M ( 2,2 )$ spanned by the following matrices.
+    What is the dimension of this subspace?
+
+    \begin{pycode}
+problem = [
+    np.array([[1, 2], [1, 3]]),
+    np.array([[1, 2], [2, 4]]),
+    np.array([[-1, -2], [-3, -5]]),
+    np.array([[-1, -2], [0, -2]])
+]
+dep_system = np.column_stack(tuple(map(np.ravel, problem)))
+rref, _ = utils.algorithms.rref(dep_system)
+pivots = utils.algorithms.get_pivots(rref)
+basis = ', '.join(map(lambda pivot: '$A_{}$'.format(pivot[0] + 1), pivots))
+    \end{pycode}
+
+    $$\py{utils.print.print_list_of_arrays(problem)}$$
+    
+    \ans 
+    $$\printobj{dep_system} \rightarrow \printobj{rref}$$
+    Basis: \py{basis} \\
+    Dimension: \py{len(pivots)}
+    
+\end{question}
+
+
+\end{document}

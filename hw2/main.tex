@@ -1,0 +1,403 @@
+\documentclass[letterpaper]{article}
+
+%% Sets page size and margins
+\usepackage[letterpaper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+ 
+%% Useful packages
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{mathtools}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{pythontex}
+\usepackage{lastpage}
+\usepackage{fancyhdr}
+
+\pagestyle{fancy}
+\graphicspath{ {images/} }
+\newcommand{\true}{$T$}
+\newcommand{\false}{$F$}
+\newcommand{\ans}{\textit{Answer: }}
+\newcommand{\prf}{\textbf{Proof:}}
+\newenvironment{question}[2][Question]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+
+% Fancy matrix
+\makeatletter
+\renewcommand*\env@matrix[1][*\c@MaxMatrixCols c]{%
+  \hskip -\arraycolsep
+  \let\@ifnextchar\new@ifnextchar
+  \array{#1}}
+\makeatother
+
+% My scripts setup
+\begin{pycode}
+import sympy
+import numpy as np
+
+import sys
+sys.path.append('..')
+
+from utils import Utils
+utils = Utils(pytex)
+sympify = np.vectorize(sympy.sympify)
+\end{pycode}
+
+\newcommand{\printobj}[1]{\py{utils.print.print_object(#1)}}
+
+\title{MA 351, HW 2} 
+\lhead{MA 351, HW 2}
+
+\author{Elnard Utiushev}
+\rhead{Elnard Utiushev}
+\cfoot{\thepage\ of \pageref{LastPage}}
+
+\begin{document}
+
+\maketitle
+
+Section 1.3: True/False: 1.21, 1.23, 1.24; Exercises 1.65, 1.66, 1.69, 1.79, 1.80 \\
+Section 1.4: True/False: 1.25, 1.26, 1.31, 1.33, 1.34; Exercises: 1.93, 1.96, 1.102, 1.119
+
+\section{Section 1.3}
+\subsection{True/False}
+
+\begin{question}{1.21}
+    If the system has three unknowns and R has three nonzero rows, then the
+    system can have an infinite number of solutions.
+
+    \ans False, it will have either no solutions, or a single solution.
+\end{question}
+
+\begin{question}{1.23}
+    The following matrix may be reduced to reduced echelon form using only one
+    elementary row operation:
+
+    \begin{pycode}
+A = [[1, 0, 0, 0], [0, 1, 0, 3], [0, 0, 1, 1], [0, 0, -1, 1]]
+# sol, ops = utils.algorithms.rref(A)
+    \end{pycode}
+
+    $$\printobj{A}$$
+
+    \ans False
+\end{question}
+
+\begin{question}{1.24}
+    The matrix in question 1.23 is the coefficient matrix for a consistent
+    system of equations
+
+    \begin{pycode}
+A = [[1, 0, 0, 0], [0, 1, 0, 3], [0, 0, 1, 1], [0, 0, -1, 1]]
+sol, ops = utils.algorithms.rref(A)
+    \end{pycode}
+
+    \ans False, the system is inconsistent
+    \begin{align*}
+        \py{ops}
+    \end{align*}
+    
+\end{question}
+
+\subsection{Exercises}
+
+\begin{question}{1.65}
+    Find the reduced echelon form of each of the following matrices:
+
+    \begin{pycode}
+A = [
+    [[2, 7, -5, -3, 13], [1, 0, 1, 4, 3], [1, 3, -2, -2, 6]],
+    [[1, 1, 1, 1, 1], [2, 2, 1, 1, 1], [1, 0, 2, 3, 2], [4, 3, 2, 1, 0]],
+    [[3, 9, 13], [2, 7, 9]],
+    [[2, 1, 3, 4, 0, -1], [-2, -1, -3, -4, 5, 6], [4, 2, 7, 6, 1, -1]],
+    [[5, 4], [1, 2]],
+    [['a', 'b'], ['c', 'd']],
+    [[2, 4, 3, 0, 6], [0, 1, 1, 1, 1], [0, 0, 0, 2, 4]],
+    [[1, 2, 3, 4], [0, 5, 6, 7], [0, 0, 9, 10], [0, 0, 0, 13]],
+    [['a', 'b', 'c', 'd'], [0, 'e', 'f', 'g'], [0, 0, 'h', 'i'], [0, 0, 0, 'j']],
+    [[2, 5, 11, 6], [1, 4, 9, 5], [-1, 2, 5, 3], [2, -1, -3, -2]]
+]
+solutions = map(lambda x: utils.algorithms.rref(x, sep_col=0), A)
+output = ""
+for sol, ops in solutions:
+    output += "\\item \\begin{align*}\n"
+    output += ops
+    output += "\n\\end{align*} \n"
+    \end{pycode}
+
+    \begin{enumerate}[label=\alph*.]
+        \py{output}
+    \end{enumerate}
+    
+\end{question}
+
+\begin{question}{1.66}
+    Suppose that the matrices in Exercise 1.65 are the augmented matrices for a 
+    system of equations. In each case, write the system down and find all 
+    solutions (if any) to the system. [(a), (c), (e), (g)]
+
+    \begin{pycode}
+A = [
+    ('a', [[2, 7, -5, -3, 13], [1, 0, 1, 4, 3], [1, 3, -2, -2, 6]]),
+    ('c', [[3, 9, 13], [2, 7, 9]]),
+    ('e', [[5, 4], [1, 2]]),
+    ('g', [[2, 4, 3, 0, 6], [0, 1, 1, 1, 1], [0, 0, 0, 2, 4]])
+]
+solutions = map(lambda x: (x[0], utils.algorithms.rref(x[1], sep_col=0)[0]), A)
+output = "\\begin{enumerate}[label=\\alph*]"
+for letter, sol in solutions:
+    output += " \\item[%s.] $$" % letter
+    output += utils.print.print_augmented_matrix_num(sol)
+    output += "$$ \n"
+    output += utils.algorithms.show_solutions(sol) + '\n'
+output += "\\end{enumerate}"
+    \end{pycode}
+   
+    \py{output}
+\end{question}
+
+\begin{question}{1.69}
+    Find conditions on a, b, c, and d for which the following system has solutions:
+
+    \begin{pycode}
+A = [
+    [2, 4, 1, 3, 'a'],
+    [-3, 1, 2, -2, 'b'],
+    [13, 5, -4, 12, 'c'],
+    [12, 10, -1, 13, 'd']
+]
+sol, ops = utils.algorithms.rref(A)
+    \end{pycode}
+    
+    \ans 
+    $$\printobj{A} \rightarrow \printobj{sol}$$
+    \py{utils.algorithms.show_solutions(sol)}
+\end{question}
+
+\begin{question}{1.79}
+    $$X = \printobj{[1, 2]}, \quad Y = \printobj{[1, -2]}$$
+    $$xX + yY = \printobj{['a', 'b']}$$
+
+    \begin{pycode}
+A = [
+    [1, 1, 'a'],
+    [2, -2, 'b']
+]
+sol, ops = utils.algorithms.rref(A)
+    \end{pycode}
+    
+    \ans 
+    \begin{align*}
+        \py{ops}
+    \end{align*}
+
+    Therefore, it is always possible to solve this equation regardless of 
+    $a$ and $b$
+    
+\end{question}
+
+\begin{question}{1.80}
+    Show that the vectors do not span $\mathbb{R}^3$ by finding a vector that cannot be 
+    expressed as a linear combination of them
+
+\begin{pycode}
+A = {
+    'X1': np.array([3, 1, 5]),
+    'X2': np.array([2, 1, 4]),
+    'X3': np.array([-1, 2, 3])
+}
+\end{pycode}
+
+    $$\py{utils.print.print_dict_of_arrays(A)}$$
+
+    \ans 
+    $$\printobj{A['X1'] + A['X2'] + A['X3'] + np.array([0, 0, 1])}$$
+    
+\end{question}
+
+\section{Section 1.4}
+\subsection{True/False}
+
+\begin{question}{1.25}
+    The nullspace of a 3 × 4 matrix cannot consist of only the zero vector.
+
+    \ans True, because there will always be a free variable.
+    
+\end{question}
+
+\begin{question}{1.26}
+    The nullspace of a 4 × 3 matrix cannot consist of only the zero vector.
+
+    \ans False
+    $$ \printobj{np.r_[np.eye(3), np.zeros(3).reshape(1, -1)]} $$
+    
+\end{question}
+
+\begin{question}{1.31}
+    The set of 3 × 1 column vectors for which the system below is
+    solvable is a plane in $\mathbb{R}^3$.
+
+    \begin{pycode}
+A = [
+    [1, 2, 3, 'b_1'],
+    [2, 4, 6, 'b_2'],
+    [3, 6, 9, 'b_3']
+]
+sol, ops = utils.algorithms.rref(A)
+    \end{pycode}
+
+    \ans
+    \begin{align*}
+        \py{ops}
+    \end{align*}
+    \py{utils.algorithms.show_solutions(sol)}
+
+\end{question}
+
+\begin{question}{1.33}
+    The set of all vectors of the form $\printobj{[1, 'x', 'y']}$, 
+    where x and y range over all real numbers, is a subspace of $\mathbb{R}^3$.
+
+    \ans False, for example, vectors $\printobj{[1, 1, 1]}, \printobj{[1, 0, 1]}$
+    belong to the subspace, but their difference does not. 
+    $$\printobj{[1, 1, 1]} - \printobj{[1, 0, 1]} = \printobj{[0, 1, 0]}$$
+    
+\end{question}
+
+\begin{question}{1.34}
+    The set of all vectors of the form $\printobj{[0, 'x', 'y']}$, 
+    where x and y range over all real numbers, is a subspace of $\mathbb{R}^3$.
+
+\begin{pycode}
+u = sympify(np.array([0, 'a', 'b'])) 
+v = sympify(np.array([0, 'c', 'd']))
+\end{pycode}
+
+    \ans True. Let $u = \printobj{u}, v = \printobj{v}$ to be vectors in this
+    subspace, then $u + v = \printobj{u + v}$ and 
+    $ s * u = \printobj{u * sympy.sympify('s')}$ belong to the subspace.
+    
+\end{question}
+
+\subsection{Exercises}
+
+\begin{question}{1.93}
+    For each matrix A and each vector X, compute AX.
+
+    \begin{pycode}
+A = [
+    (
+        [[1, 0, -3, 2], [2, -2, 1, 1], [3, 2, -2, -3]],
+        [[1], [2], [3], [4]]
+    ),
+    (
+        [[-5, 17], [4, 2], [3, 1], [5, -5]],
+        [[2], [1]]
+    ),
+    (
+        [[1, 2, 3], [4, 5, 6]],
+        [['x'], ['y'], ['z']]
+    )
+]
+
+output = "\\begin{enumerate}[label=\\alph*.]"
+for a, x in A:
+    output += "\n \\item $$"
+    output += utils.print(a) + " " + utils.print(x) + " = "
+    output += utils.print(
+        sympy.Matrix(np.array(a)) @ sympy.Matrix(np.array(x))
+    )
+    output += " $$ \n"
+
+output += "\\end{enumerate}"
+
+    \end{pycode}
+
+    \py{output}
+
+\end{question}
+
+\begin{question}{1.96}
+    Find the nullspace for each of the matrices A in Exercise 1.93. 
+    Express each answer as a span.
+
+
+    \begin{pycode}
+A = [
+    np.array([[1, 0, -3, 2], [2, -2, 1, 1], [3, 2, -2, -3]]),
+    np.array([[-5, 17], [4, 2], [3, 1], [5, -5]]),
+    np.array([[1, 2, 3], [4, 5, 6]]),
+]
+
+output = "\\begin{enumerate}[label=\\alph*.]"
+for a in A:
+    sol, ops = utils.algorithms.rref(a)
+    output += "\n \\item $$"
+    output += utils.print(a) + " \\rightarrow " + utils.print(sol) + "$$"
+    output += utils.algorithms.show_solutions(
+        np.c_[sol, np.zeros((sol.shape[0], 1)).astype(int)]
+        ) + '\n'
+
+output += "\\end{enumerate}"
+    \end{pycode}
+
+    \py{output}
+    
+\end{question}
+
+\begin{question}{1.102}
+    Create a system of four equations in five unknowns (reader’s choice) 
+    such that the solution space is a plane in $\mathbb{R}^5$ (Definition 1.10 on page 38).
+    Do not make any coefficients equal 0. Explain why your example works.
+
+    \begin{pycode}
+A = np.arange(1, 1 + 6).reshape(1, -1)
+B = np.flip(np.arange(7, 7 + 6).reshape(1, -1))
+C = np.random.randint(1, 100, (1, 6))
+
+M = np.r_[A, B, C, 2 * B]
+sol, ops = utils.algorithms.rref(M)
+    \end{pycode}
+
+    \ans 
+    $$ \printobj{M} \rightarrow \printobj{sol} $$
+
+    I made one of the rows of the matrix to be a linear combination of another row,
+    so the number of free variables at the end will be equal to 2.
+    
+\end{question}
+
+\begin{question}{1.119}
+    A square matrix A is upper triangular if all the entries below the main 
+    diagonal are zero. Prove that the set $\mathcal{T}$ of all 3 × 3 upper triangular
+    matrices is a subspace of M(3, 3).
+
+    \begin{pycode}
+A = sympify(np.array([
+    ['a_1', 'a_2', 'a_3'],
+    [0, 'a_4', 'a_5'],
+    [0, 0, 'a_6']
+]))
+B = sympify(np.array([
+    ['b_1', 'b_2', 'b_3'],
+    [0, 'b_4', 'b_5'],
+    [0, 0, 'b_6']
+]))
+
+s, t = sympy.var('s t')
+    \end{pycode}
+
+    \ans Let A and B to be in the set $\mathcal{T}$. Let s and t to be scalars 
+
+    $$A = \printobj{A}, \quad B = \printobj{B}$$
+
+    $$sA + tB = \printobj{s * A} + \printobj{t * B} = \printobj{s * A + t * B}$$
+
+    $sA + tB$ is an upper triangular, therefore $\mathcal{T}$ closed under 
+    linear combination and a subspace. 
+    
+\end{question}
+
+ 
+\end{document}
