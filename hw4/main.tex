@@ -1,0 +1,446 @@
+\documentclass[letterpaper]{article}
+
+%% Sets page size and margins
+\usepackage[letterpaper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+ 
+%% Useful packages
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{mathtools}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{pythontex}
+\usepackage{lastpage}
+\usepackage{fancyhdr}
+
+\pagestyle{fancy}
+\graphicspath{ {images/} }
+\newcommand{\true}{$T$}
+\newcommand{\false}{$F$}
+\newcommand{\ans}{\textit{Answer: }}
+\newcommand{\prf}{\textbf{Proof:}}
+\newenvironment{question}[2][Question]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+
+% Fancy matrix
+\makeatletter
+\renewcommand*\env@matrix[1][*\c@MaxMatrixCols c]{%
+  \hskip -\arraycolsep
+  \let\@ifnextchar\new@ifnextchar
+  \array{#1}}
+\makeatother
+
+% My scripts setup
+\begin{pycode}
+import sympy
+import numpy as np
+
+import sys
+sys.path.append('..')
+
+from utils import Utils
+utils = Utils(pytex)
+sympify = np.vectorize(sympy.sympify)
+\end{pycode}
+
+\newcommand{\printobj}[1]{\py{utils.print.print_object(#1)}}
+
+\title{MA 351, HW 4} 
+\lhead{MA 351, HW 4}
+
+\author{Elnard Utiushev}
+\rhead{Elnard Utiushev}
+\cfoot{\thepage\ of \pageref{LastPage}}
+
+\begin{document}
+
+\maketitle
+
+Section 2.3: True/False: 2.20, 2.25; Exercises: 2.66, 2.70, 2.80 \\ 
+Section 3.1: True/False: 3.1, 3.4, 3.5; Exercises: 3.9, 3.10, 3.17, 3.21, 3.24 \\
+Section 3.2: True/False: 3.14, 3.15, 3.18; Exercises: 3.34, 3.49
+
+\section{Section 2.3}
+\subsection{True/False}
+
+\begin{question}{2.20}
+    Suppose that $A$ is a $3 \times 5$ matrix such that the vectors 
+    $ X = [ 1,1,1,1,1 ] ^ { t } , Y = [ 0,1,1,1,1 ] ^ { t }$,
+    and $Z = [ 0,0,1,1,1 ] ^ { t }$ belong to the nullspace of A. 
+    Classify the following statements as true or false.
+
+\begin{pycode}
+X = np.array([1, 1, 1, 1, 1]).reshape(1, -1)
+Y = np.array([0, 1, 1, 1, 1]).reshape(1, -1)
+Z = np.array([0, 0, 1, 1, 1]).reshape(1, -1)
+
+A = np.r_[X, Y, Z]
+rref, _ = utils.algorithms.rref(A)
+\end{pycode}
+
+$$\printobj{A} \rightarrow \printobj{rref}$$
+
+    \begin{enumerate}[label=(\alph*)]
+        \item The rows of $A$ are dependent. \\
+        \ans False, since we need at least 3 independent row vectors, for 
+        $X, Y, Z$ to belong to the nullspace.
+
+        \item $A X = B$ has a solution for all $B \in \mathbb { R } ^ { 3 }$ . \\
+        \ans True, because $A$ is a $3 \times 5$ matrix
+
+        \item The solution to $A X = B ,$ when it exists, is unique. \\
+        \ans False
+    \end{enumerate}
+
+\end{question}
+
+\begin{question}{2.25}
+    Suppose that $A$ is a $3 \times 7$ matrix such that the equation $A X = B$ is solvable for
+    all $B$ in $\mathbb { R } ^ { 3 } .$ Then $A$ has rank 3.
+
+    \ans True, according to the theorem 2.16
+\end{question}
+
+\subsection{Exercises}
+
+\begin{question}{2.66}
+    For each matrix $( a ) - ( d ) ,$ find its rank and bases for its column and
+    row spaces.
+
+\begin{pycode}
+problems = [
+    [[1, 2, 0, -2], [2, 3, 2, 3], [2, 10, 4, 10]],
+    [[-1, 4, -2], [4, 4, 2], [3, 0, -3]],
+    [[2, 1, 1], [1, 3, 2], [5, 0, 1]],
+    [[1, 2, 2], [2, 4, 4], [3, 6, 6], [-2, -4, -4]]
+]
+
+sol = "\\begin{enumerate}[label=(\\alph*)]\n"
+for problem in problems:
+    sol += "\\item $$ " + utils.print(problem) + " $$ \n"
+    sol += "\\textit{Answer: } \n"
+
+    rref, _ = utils.algorithms.rref(problem)
+
+    sol += "$$ "
+    sol += utils.print(problem)
+    sol += "\\rightarrow"
+    sol += utils.print(rref)
+    sol += " $$ \n"
+
+    pivots = utils.algorithms.get_pivots(rref)
+    sol += "Rank: {} \\\\".format(len(pivots))
+    sol += "Row space basis: "
+    basis = []
+    for i, j in pivots:
+        basis.append(rref[i])
+    sol += "$ " + utils.print.print_list_of_arrays(basis) + " $\n"
+    sol += "\\\\"
+
+    sol += "Column space basis: "
+    basis = []
+    for i, j in pivots:
+        basis.append(np.array(problem)[:, j])
+    sol += "$ " + utils.print.print_list_of_arrays(basis) + " $\n"
+
+sol += "\\end{enumerate}"
+\end{pycode}
+    
+    \py{sol}
+\end{question}
+
+\begin{question}{2.70}
+    Let $\mathcal { W }$ be the span of the following vectors.
+
+\begin{pycode}
+vecs = [
+    [2, 3, 1, 2],
+    [5, 2, 1, 2],
+    [1, -4, -1, -2],
+    [11, 0, 1, 2]
+]
+
+A = np.array(vecs)
+rref, _ = utils.algorithms.rref(A)
+pivots = utils.algorithms.get_pivots(rref)
+basis = []
+for i, j in pivots:
+    basis.append(rref[i])
+\end{pycode}
+
+$$\py{utils.print.print_list_of_arrays(vecs)}$$
+
+    \begin{enumerate}[label=(\alph*)]
+        \item Use Theorem 2.12 on page 134 to find a basis for $\mathcal { W }$ \\
+        \ans $\py{utils.print.print_list_of_arrays(basis)}$
+
+        \item Express each the given vectors as a linear combination of the 
+        basis elements. \\
+\begin{pycode}
+sol = ""
+for vec in vecs:
+    _, lincomb_string = utils.algorithms.as_linear_combination(basis, vec)
+    sol += "$"
+    sol += lincomb_string
+    sol += "$ \\\\"
+\end{pycode}
+        \ans \py{sol}
+
+        \item Use Theorem 2.3 on page 104 to find a basis for $\mathcal { W }$. \\
+\begin{pycode}
+rref, _ = utils.algorithms.rref(A.T)
+pivots = utils.algorithms.get_pivots(rref)
+basis_cols = []
+for i, j in pivots:
+    basis_cols.append(A.T[:, j])
+\end{pycode}
+        \ans $\py{utils.print.print_list_of_arrays(basis_cols)}$
+    \end{enumerate}
+\end{question}
+
+\begin{question}{2.80}
+    An $m \times n$ matrix $A$ has a $d$ -dimensional nullspace. What is the 
+    dimension of the nullspace of $A ^ { t } ?$
+
+    \ans According to Rank-Nullity Theorem, $m - (n - d)$
+\end{question}
+
+\section{Section 3.1}
+\subsection{True/False}
+
+\begin{question}{3.1}
+    A linear transformation of $\mathbb { R } ^ { 2 }$ into $\mathbb { R } ^ { 2 }$
+    that transforms $[ 1,2 ] ^ { t }$ to $[ 7,3 ] ^ { t }$ and $[ 3,4 ] ^ { t }$
+    to $[ - 1,1 ] ^ { t }$ will also transform $[ 5,8 ] ^ { t }$ to $[ 13,7 ] ^ { t }$
+
+\begin{pycode}
+A = [
+    [1, 2, 0, 0, 7],
+    [0, 0, 1, 2, 3],
+    [3, 4, 0, 0, -1],
+    [0, 0, 3, 4, 1]
+]
+rref, _ = utils.algorithms.rref(A)
+
+trans = [
+    [-15, 11],
+    [-5, 4]
+]
+\end{pycode}
+
+    \ans True. We can find the transformation by solving this augmented matrix
+    $$\printobj{A} \rightarrow \printobj{rref}$$
+    So the transformation is $\printobj{trans}$, we can verify that
+    $$\printobj{trans} \printobj{[1, 2]} = \printobj{np.matmul(trans, [1, 2])}$$
+    $$\printobj{trans} \printobj{[3, 4]} = \printobj{np.matmul(trans, [3, 4])}$$
+    $$\printobj{trans} \printobj{[5, 8]} = \printobj{np.matmul(trans, [5, 8])}$$
+\end{question}
+
+\begin{question}{3.4}
+    It is impossible for a linear transformation from $\mathbb { R } ^ { 2 }$ 
+    into $\mathbb { R } ^ { 2 }$ to transform a parallelogram onto a line segment.
+
+    \ans False
+\end{question}
+
+\begin{question}{3.5}
+    All transformations of $\mathbb { R } ^ { 2 }$ into $\mathbb { R } ^ { 2 }$ 
+    transform line segments onto line segments.
+
+    \ans False, it is possible to transform (example $\printobj{np.zeros((2, 2)).astype(int)}$)
+    line segment to a point.
+\end{question}
+
+\subsection{Exercises}
+
+\begin{question}{3.9}
+    Describe geometrically the effect of the transformation of 
+    $\mathbb { R } ^ { 3 }$ into $\mathbb { R } ^ { 3 }$ defined
+    by multiplication by the following matrices.
+
+    \begin{enumerate}[label=(\alph*)]
+        \item $$R _ { \psi } ^ { x } = \left[ \begin{array} { c c c } { 1 } & { 0 } & { 0 } \\ { 0 } & { \cos \psi } & { - \sin \psi } \\ { 0 } & { \sin \psi } & { \cos \psi } \end{array} \right]$$
+        \ans Rotation counterclockwise around $x$ axis for $\psi$
+
+        \item $$
+        R _ { \psi } ^ { y } = \left[ \begin{array} { c c c } { \cos \psi } & { 0 } & { - \sin \psi } \\ { 0 } & { 1 } & { 0 } \\ { \sin \psi } & { 0 } & { \cos \psi } \end{array} \right]
+        $$
+        \ans Rotation counterclockwise around $y$ axis for $\psi$
+
+        \item $$
+        R _ { \psi } ^ { z } = \left[ \begin{array} { c c c } { \cos \psi } & { - \sin \psi } & { 0 } \\ { \sin \psi } & { \cos \psi } & { 0 } \\ { 0 } & { 0 } & { 1 } \end{array} \right]
+        $$
+        \ans Rotation counterclockwise around $z$ axis for $\psi$
+    \end{enumerate}
+\end{question}
+
+\begin{question}{3.10}
+    Consider the points
+    $$
+    \begin{array} { l l } { X _ { 1 } = [ 1,1 ] ^ { t } , } & { X _ { 2 } = [ 2,2 ] ^ { t } } \\ { Y _ { 1 } = [ 4,5 ] ^ { t } , } & { Y _ { 2 } = [ 5,6 ] ^ { t } } \end{array}
+    $$
+
+    Is it possible to find a $2 \times 2$ matrix $A$ for which multiplication by $A$ 
+    transforms $X _ { 1 }$ into $Y _ { 1 }$ and $X _ { 2 }$ into $Y _ { 2 } ?$ 
+
+    \ans No
+    \begin{gather*}
+        X_2 = 2X_1
+        Y_2 = AX_2 = A(2X_1) = 2AX_1 = 2Y_1
+    \end{gather*}
+\end{question}
+
+\begin{question}{3.17}
+    What matrix describes rotation in $\mathbb { R } ^ { 2 }$ clockwise by $\theta$ radians?
+    
+    \ans 
+    $$
+    \begin{bmatrix}
+        \cos \theta & \sin \theta \\
+        -\sin \theta & \cos \theta
+    \end{bmatrix}
+    $$
+\end{question}
+
+\begin{question}{3.21}
+    Let $\mathcal { V }$ and $\mathcal { W }$ be vector spaces. Let 
+    $T : \mathcal { V } \rightarrow \mathcal { W }$ be a linear transformation.
+    Prove that $T ( 0 ) = 0 .$ (Note: You should not assume that $T$ is a matrix 
+    transformation. Instead, think about the property that in any vector space $0 , X = 0 . )$
+
+    \ans $T(0 + 0) = T(0) + T(0)$
+\end{question}
+
+\begin{question}{3.24}
+    Let $T : \mathcal { V } \rightarrow \mathcal { W }$ be a linear transformation between two vector spaces. We
+define the image $T ( \mathcal { V } )$ by $T ( \mathcal { V } ) = \{ T ( X ) | X \in \mathcal { V } \} .$ The image is the set
+of $Y \in \mathcal { W }$ such that the equation $T ( X ) = Y$ is solvable for $X \in \mathcal { V }$ . Show that
+the image of $T$ is a subspace of $\mathcal { V }$ .
+
+    \ans Let $T(X_1) = Y_1, T(X_2) = Y_2$ to be in $T ( \mathcal { V } )$. We can
+    show that $T(aY_1 + bY_2) = aT(Y_1) + bT(Y_2)$, where $a$ and $b$ are scalars, meaning
+    that image is closed under linear combinations.
+\end{question}
+
+\section{Section 3.2}
+\subsection{True/False}
+
+\begin{question}{3.14}
+    Let $A = R _ { \pi / 2 }$ be the matrix that describes rotation by $\pi / 2$ radians [formula $( 3.1 )$
+    on page $150 ] .$ Then $A ^ { 4 } = I ,$ where $I$ is the $2 \times 2$ identity matrix.
+
+    \ans True, since application of the rotation by $\pi / 2$ radians will result
+    in the full circle of rotation.
+\end{question}
+
+\begin{question}{3.15}
+    Assume that $A$ and $B$ are matrices such that $A B$ is defined and $B$ has a column
+    that has all its entries equal to zero. Then one of the columns of $A B$ also has all
+    its entries equal to zero.
+
+    \ans True
+\end{question}
+
+\begin{question}{3.18}
+    Assume that $A$ and $B$ are matrices such that $A B$ is defined and the columns of $B$
+    are linearly dependent. Then the columns of $A B$ are also linearly dependent.
+
+    \ans True
+\end{question}
+
+\subsection{Exercises}
+
+\begin{question}{3.34}
+    Define a transformation $T : \mathbb { R } ^ { 2 } \rightarrow \mathbb { R } ^ { 2 }$ by 
+    the following rule: $T ( X )$ is the result
+    of first rotating $X$ counterclockwise by $\pi / 6$ radians and then multiplying by
+    $$
+    A = \left[ \begin{array} { l l } { 2 } & { 0 } \\ { 0 } & { 3 } \end{array} \right]
+    $$
+
+\begin{pycode}
+A = [
+    [2, 0],
+    [0, 3]
+]
+R = [
+    [sympy.cos(sympy.pi / 6), -sympy.sin(sympy.pi / 6)],
+    [sympy.sin(sympy.pi / 6), sympy.cos(sympy.pi / 6)]
+]
+
+A = sympy.Matrix(A)
+R = sympy.Matrix(R)
+B_sympy = sympy.MatMul(A, R).doit()
+B = np.array(B_sympy)
+\end{pycode}
+
+
+    $$
+    B = AR_{\pi/6} = \printobj{A} \printobj{R} = \printobj{B}
+    $$
+
+    \begin{enumerate}[label=(\alph*)]
+        \item What is the image of the circle $x ^ { 2 } + y ^ { 2 } = 1$ under $T ?$ \\
+        \ans 
+\begin{pycode}
+C = np.c_[B, ['u', 'v']]
+rref, _ = utils.algorithms.rref(C)
+img = rref[0, 2] ** 2 + rref[1, 2] ** 2
+\end{pycode}
+
+        $$\printobj{C} \rightarrow \printobj{rref}$$
+
+        Our image of the circle:
+        $$\printobj{img} = 1$$
+
+        \item What is the image of the unit square under $T ?$ \\
+        \ans 
+\begin{pycode}
+problems = [
+    [0, 0],
+    [1, 0],
+    [0, 1],
+    [1, 1]
+]
+
+solutions = []
+for problem in problems:
+    solutions.append(np.array(sympy.MatMul(B_sympy, sympy.Matrix(problem)).doit()))
+
+\end{pycode}
+
+        $$
+        \printobj{utils.print.print_list_of_arrays(problems)}
+        \rightarrow
+        \printobj{utils.print.print_list_of_arrays(solutions)}
+        $$
+
+        \item Find a matrix $B$ such that $T ( X ) = B X$ for all $X \in \mathbb { R } ^ { 2 }$ \\
+        \ans 
+
+        $$B = \printobj{B}$$
+    \end{enumerate}
+\end{question}
+
+\begin{question}{3.49}
+    Find a $3 \times 3$ matrix $A$ such that $A ^ { 3 } = 0$ but $A ^ { 2 } \neq 0 .$
+
+\begin{pycode}
+A = np.array([
+    [0, 0, 0],
+    [1, 0, 0],
+    [0, 1, 0]
+])
+\end{pycode}
+
+    \ans 
+    \begin{gather*}
+        A = \printobj{A}, 
+        A^2 = \printobj{np.linalg.matrix_power(A, 2)},
+        A^3 = \printobj{np.linalg.matrix_power(A, 3)}
+    \end{gather*}
+
+\end{question}
+
+\end{document}

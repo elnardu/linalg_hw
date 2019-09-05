@@ -27,6 +27,24 @@ class MyPrint():
 
         return latex_code
 
+    def print_matrix_det(self, obj):
+        if isinstance(obj, list):
+            latex_code = self.pytex.sympy_latex(sympy.Matrix(np.array(obj)))
+            latex_code = latex_code.replace('pmatrix', 'vmatrix')
+            latex_code = latex_code.replace('\\left(', '\\left|')
+            latex_code = latex_code.replace('\\right)', '\\right|')
+
+        elif isinstance(obj, np.ndarray):
+            latex_code = self.pytex.sympy_latex(sympy.Matrix(obj))
+            latex_code = latex_code.replace('pmatrix', 'vmatrix')
+            latex_code = latex_code.replace('\\left(', '\\left|')
+            latex_code = latex_code.replace('\\right)', '\\right|')
+
+        else:
+            assert False
+
+        return latex_code
+
     def print_dict_of_arrays(self, d):
         sep = ""
         result = ""

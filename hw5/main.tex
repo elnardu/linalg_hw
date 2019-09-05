@@ -1,0 +1,520 @@
+\documentclass[letterpaper]{article}
+
+%% Sets page size and margins
+\usepackage[letterpaper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+ 
+%% Useful packages
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{mathtools}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{pythontex}
+\usepackage{lastpage}
+\usepackage{fancyhdr}
+
+\pagestyle{fancy}
+\graphicspath{ {images/} }
+\newcommand{\true}{$T$}
+\newcommand{\false}{$F$}
+\newcommand{\ans}{\textit{Answer: }}
+\newcommand{\prf}{\textbf{Proof:}}
+\newenvironment{question}[2][Question]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+
+% Fancy matrix
+\makeatletter
+\renewcommand*\env@matrix[1][*\c@MaxMatrixCols c]{%
+  \hskip -\arraycolsep
+  \let\@ifnextchar\new@ifnextchar
+  \array{#1}}
+\makeatother
+
+% My scripts setup
+\begin{pycode}
+import sympy
+import numpy as np
+
+import sys
+sys.path.append('..')
+
+from utils import Utils
+utils = Utils(pytex)
+sympify = np.vectorize(sympy.sympify)
+\end{pycode}
+
+\newcommand{\printobj}[1]{\py{utils.print.print_object(#1)}}
+
+\title{MA 351, HW 5} 
+\lhead{MA 351, HW 5}
+
+\author{Elnard Utiushev}
+\rhead{Elnard Utiushev}
+\cfoot{\thepage\ of \pageref{LastPage}}
+
+\begin{document}
+
+\maketitle
+
+Section 3.2: True/False: 3.12, 3.20; Exercises: 3.41 \\
+Section 3.3: True/False: 3.21, 3.23, 3.30; Exercises 3.64 (a)(b)(f)(k), 3.71, 3.72, 3.78, 3.83, 3.88 \\
+Section 3.5: True/False: 3.32, 3.33 Exercises: 3.126 (a)(b)(c)(e), 3.130 (c)(d)(e)
+
+\section{Section 3.2}
+\subsection{True/False}
+
+\begin{question}{3.12}
+    If $A$ and $B$ are $2 \times 2$ matrices, $( A B ) ^ { 2 } = A ^ { 2 } B ^ { 2 }$.
+
+    \ans False, since $AB \neq BA$ does not hold for all $2 \times 2$ matrices
+\end{question}
+
+\begin{question}{3.20}
+    Suppose that matrices $A$ and $B$ satisfy $A B = 0 .$ Then either $A = 0$ or $B = 0$
+
+\begin{pycode}
+problem = {
+  'A': [
+    [1, 0],
+    [0, 0]
+  ],
+  'B': [
+    [0, 0],
+    [0, 1]
+  ]
+}
+\end{pycode}
+
+    \ans False
+    $$\py{utils.print.print_dict_of_arrays(problem)}$$
+    $$AB = \printobj{np.matmul(problem['A'], problem['B'])} = 0$$
+\end{question}
+
+\subsection{Exercises}
+
+\begin{question}{3.41}
+  For the given matrix $A ,$ find a $3 \times 2$ nonzero matrix $B$ such that $A B = 0 .$ Prove
+  that any such matrix $B$ must have rank $1 .$ [Hint: The columns of $B$ belong to
+  the nullspace of $A . ]$
+
+  $$A = \left[ \begin{array} { l l l } { 1 } & { 2 } & { 1 } \\ { 1 } & { 1 } & { 1 } \end{array} \right]$$
+
+  \begin{pycode}
+A = np.array([[1, 2, 1], [1, 1, 1]])
+
+B = np.c_[A, np.zeros((A.shape[0], 1))].astype(int)
+
+rref, _ = utils.algorithms.rref(B)
+  \end{pycode}
+
+  \ans 
+  $$\printobj{B} \rightarrow \printobj{rref}$$
+
+  $$B = \printobj{[
+    [1, 2],
+    [0, 0],
+    [-1, -2]
+  ]}$$
+
+  Since the basis for all Bs only has one vector, any matrix B will have rank 1.
+\end{question}
+
+\section{Section 3.3}
+\subsection{True/False}
+
+\begin{question}{3.21}
+  The following matrix is invertible:
+
+  \begin{pycode}
+A = np.array([[1, 2, -1, 4], [2, 2, 2, 2], [1, 2, 1, 0], [4, 6, 2, 6]])
+
+B = np.c_[A, np.eye(A.shape[0])].astype(int)
+rref, _ = utils.algorithms.rref(B)
+  \end{pycode}
+
+  $$\printobj{A}$$
+  
+  \ans False
+
+  $$\printobj{B} \rightarrow \printobj{rref}$$
+\end{question}
+
+\begin{question}{3.23}
+  Suppose that $A$ is an invertible matrix and $B$ is any matrix for which $B A$ is
+  defined. Then the matrices $B A$ and $B$ need not have the same rank.
+  
+  \ans False
+\end{question}
+
+\begin{question}{3.30}
+  Suppose that $A$ is an $n \times n$ invertible matrix and $B$ is any $n \times n$ matrix. Then
+  $A B A ^ { - 1 } = B$
+
+  \ans False, matrix multiplication is generally not commutative 
+\end{question}
+
+\subsection{Exercises}
+
+\begin{question}{3.64}
+  Use the method of Example 3.8 on page 185 to invert the following matrices
+  (if possible).
+
+  \begin{pycode}
+problems = [
+  ('a', [[1, 0, 3], [4, 4, 2], [2, 5, -4]]),
+  ('b', [[0, 1, 1], [1, 0, 1], [1, 1, 0]]),
+  ('f', [[2, -1, 2, 0], [4, -1, 4, -2], [8, -3, 10, 0], [6, -3, 8, 9]]),
+  ('k', [[1, 0, 3, 0], [0, 1, 0, 0], [-1, 0, 1, 1], [1, 1, 1, 1]]),
+]
+
+sol = "\\begin{enumerate}\n"
+for letter, A in problems:
+  sol += "\\item[\\textbf{(%s)}]\n" % letter
+
+  A = np.array(A)
+  B = np.c_[A, np.eye(A.shape[0])].astype(int)
+  rref, _ = utils.algorithms.rref(B)
+
+  sol += "$$%s \\rightarrow %s$$\n" % (
+      utils.print.print_augmented_matrix_num(B, A.shape[0]),
+      utils.print.print_augmented_matrix_num(rref, A.shape[0])
+    )
+
+sol += "\\end{enumerate}\n"
+
+  \end{pycode}
+
+  \ans
+  \py{sol}
+\end{question}
+
+\begin{question}{3.71}
+  Assume that $a d - b c \neq 0 .$ Find the inverse of
+  $$A = \left[ \begin{array} { l l } { a } & { b } \\ { c } & { d } \end{array} \right]$$
+  
+  \begin{pycode}
+A = sympify([
+  ['a', 'b'],
+  ['c', 'd']
+])
+
+B = np.c_[A, np.eye(A.shape[0]).astype(int)]
+rref, _ = utils.algorithms.rref(B)
+  \end{pycode}
+
+  \ans
+  $$
+  \py{utils.print.print_augmented_matrix_num(B, A.shape[0])}
+  \rightarrow
+  \py{utils.print.print_augmented_matrix_num(rref, A.shape[0])}
+  $$
+\end{question}
+
+\begin{question}{3.72}
+  Compute the inverse of the matrix $A :$
+
+$$A = \left[ \begin{array} { l l l } { 1 } & { a } & { b } \\ { 0 } & { 1 } & { c } \\ { 0 } & { 0 } & { 1 } \end{array} \right]$$
+
+  \begin{pycode}
+A = sympify([[1, 'a', 'b'], [0, 1, 'c'], [0, 0, 1]])
+B = np.c_[A, np.eye(A.shape[0]).astype(int)]
+rref, _ = utils.algorithms.rref(B)
+  \end{pycode}
+
+  \ans
+  $$
+  \py{utils.print.print_augmented_matrix_num(B, A.shape[0])}
+  \rightarrow
+  \py{utils.print.print_augmented_matrix_num(rref, A.shape[0])}
+  $$
+\end{question}
+
+\begin{question}{3.78}
+  Suppose that $A$ is an $n \times n$ matrix such that $A ^ { 3 } + 3 A ^ { 2 } + 2 A + 5 I = 0 .$ Show
+  that $A$ is invertible.
+  
+  \ans
+
+  \begin{align*}
+    A ^ { 3 } + 3 A ^ { 2 } + 2 A + 5 I &= 0 \\
+    A ^ { 3 } + 3 A ^ { 2 } + 2 A &= -5I \\
+    (A^2 + 3A + 2)A &= -5I \\
+    -\frac{1}{5}(A^2 + 3A + 2)A &= I
+  \end{align*}
+
+  Therefore, matrix $A$ is invertable
+\end{question}
+
+\begin{question}{3.83}
+  Prove that if $A$ is invertible, then so are $A ^ { 2 } , A ^ { 3 } ,$ and $A ^ { 4 } .$ What are the inverses
+  of these matrices? (Assume that you know $A ^ { - 1 } . )$
+  
+  \ans 
+  \begin{gather*}
+    AA_{-1} = I \\
+    A^2 = AA \Rightarrow A^2A^{-1}A^{-1} = AAA^{-1}A^{-1} \Rightarrow A^2A^{-2} = I \\
+    A^3 = AAA \Rightarrow A^3A^{-1}A^{-1}A^{-1} = AAAA^{-1}A^{-1}A^{-1} \Rightarrow A^3A^{-3} = I \\
+    A^4 = AAAA \Rightarrow A^4A^{-1}A^{-1}A^{-1}A^{-1} = AAAAA^{-1}A^{-1}A^{-1}A^{-1} \Rightarrow A^4A^{-4} = I
+  \end{gather*}
+
+  $$
+  inv(A^2) = (A^{-1})^2, 
+  inv(A^3) = (A^{-1})^3, 
+  inv(A^4) = (A^{-1})^4
+  $$
+\end{question}
+
+\begin{question}{3.88}
+  We know that only square matrices can be invertible. We also know that if a
+  square matrix has a right inverse, the right inverse is also a left inverse. It is
+  possible, however, for a non square matrix to have either a right inverse or a
+  left inverse (but not both). Parts (a)-(d) explore these possibilities.
+
+  \begin{enumerate}[label=\textbf{(\alph*)}]
+    \item For the given matrix $A$ find a $3 \times 2$ matrix $B$ such that $A B = I ,$ where
+    $I$ is the $2 \times 2$ identity matrix. [Hint: If $B _ { 1 }$ and $B _ { 2 }$ are the columns of $B$ ,
+    then $A B _ { j } = I _ { j } . ]$
+
+    $$
+    A = \left[ \begin{array} { l l l } { 1 } & { 2 } & { 1 } \\ { 1 } & { 1 } & { 1 } \end{array} \right]
+    $$
+
+    \begin{pycode}
+A = np.array([[1, 2, 1], [1, 1, 1]])
+
+B = np.c_[A, np.array([1, 0]).reshape(2, -1)]
+C = np.c_[A, np.array([0, 1]).reshape(2, -1)]
+
+rrefB, _ = utils.algorithms.rref(B)
+rrefC, _ = utils.algorithms.rref(C)
+    \end{pycode}
+
+    \ans 
+
+    $$
+    \py{utils.print.print_augmented_matrix_num(B, 1)}
+    \rightarrow
+    \py{utils.print.print_augmented_matrix_num(rrefB, 1)}
+    $$
+    $$
+    \py{utils.print.print_augmented_matrix_num(C, 1)}
+    \rightarrow
+    \py{utils.print.print_augmented_matrix_num(rrefC, 1)}
+    $$
+
+    $$B = \printobj{[
+      [-1, 2],
+      [1, -1],
+      [0, 0]
+    ]}$$
+
+    \item Suppose that $A$ is any $2 \times 3$ matrix with rank $2 .$ Prove that $A$ has a right
+    inverse. [Hint: Is the equation $A X = B$ solvable for all $B \in \mathbb { R } ^ { 2 } ] ?$
+
+    \ans $AB = I$, $rank(I) = 2$. Since 3 > 2, there always will be a solution to $AB = I$
+
+    \item Show conversely that if $A$ is a $2 \times 3$ matrix that has a right inverse,
+    then $A$ has rank 2
+
+    \ans Let B to be the right inverse of A
+
+    \begin{gather*}
+      rank(AB) = rank(I) = 2 \\
+      rank(AB) \leq rank(B) \leq 2
+    \end{gather*}
+
+    \item Under what circumstances does an $m \times n$ matrix have a right inverse?
+    State your condition in terms of rank and prove your answer.
+
+    \ans $m \leq rank(A)$ and rows are linearly independent. This way we ensure that
+    the matrix will be either square and invertable, or will not be square and will have at 
+    least 1 free variable. 
+  \end{enumerate}
+\end{question}
+
+\section{Section 3.5}
+\subsection{True/False}
+
+\begin{question}{3.32}
+  Let $\mathcal { B }$ and $\overline { \mathcal { B } }$ be ordered bases for 
+  $\mathbb { R } ^ { n }$. Then the matrix of the identity transformation of 
+  $\mathbb { R } ^ { n }$ into itself with respect to $\mathcal { B }$ and 
+  $\overline { \mathcal { B } }$ is the $n \times n$ identity
+  matrix $I .$
+  
+  \ans False
+
+\end{question}
+
+\begin{question}{3.33}
+  Let $\mathcal { B }$ and $\overline { \mathcal { B } }$ be ordered bases for $\mathbb { R } ^ { n }$ where $\mathcal { B } = \overline { \mathcal { B } }$ . Then the matrix of the
+  identity transformation of $\mathbb { R } ^ { n }$ into itself with respect to $\mathcal { B }$ and $\overline { \mathcal { B } }$ is the $n \times n$
+  identity matrix $I .$
+
+  \ans True
+\end{question}
+
+\subsection{Exercises}
+
+\begin{question}{3.126}
+  Compute the matrix $M$ with respect to the standard ordered basis of $M ( 2,2 )$
+  for the linear transformation $L : M ( 2,2 ) \rightarrow M ( 2,2 ) ,$ where
+
+  $$
+  A = \left[ \begin{array} { l l } { 1 } & { 2 } \\ { 3 } & { 4 } \end{array} \right]
+  $$
+
+  \begin{pycode}
+A = sympy.Matrix([[1, 2], [3, 4]])
+  \end{pycode}
+
+  \begin{enumerate}[label=\textbf{(\alph*)}]
+    \item $L ( X ) = A X$
+    
+    \begin{pycode}
+B = sympy.Matrix([
+  ['a', 'b'],
+  ['c', 'd']
+])
+
+C = sympy.MatMul(A, B).doit()
+    \end{pycode}
+
+    \ans 
+
+    $$\printobj{A} \printobj{B} = \printobj{C}$$
+    $$\printobj{np.ravel(C)} 
+    = \printobj{[
+      [1, 0, 2, 0],
+      [0, 1, 0, 2],
+      [3, 0, 4, 0],
+      [0, 3, 0, 4]
+    ]} \printobj{np.ravel(B)}$$
+
+    \item $L ( X ) = X A$
+    
+    \begin{pycode}
+C = sympy.MatMul(B, A).doit()
+    \end{pycode}
+
+    \ans
+
+    $$\printobj{B} \printobj{A} = \printobj{C}$$
+    $$\printobj{np.ravel(C)} 
+    = \printobj{[
+      [1, 3, 0, 0],
+      [2, 4, 0, 0],
+      [0, 0, 1, 3],
+      [0, 0, 2, 4]
+    ]} \printobj{np.ravel(B)}$$
+    
+    \item $L ( X ) = A X A ^ { t }$
+    
+    \begin{pycode}
+C = sympy.MatMul(sympy.MatMul(A, B), sympy.Transpose(A)).doit()
+    \end{pycode}
+
+    \ans 
+
+    $$\printobj{A} \printobj{B} \printobj{sympy.Transpose(A).doit()} = \printobj{C}$$
+    $$\printobj{np.ravel(C)} 
+    = \printobj{[
+      [1, 2, 2, 4],
+      [3, 4, 6, 8],
+      [3, 6, 4, 8],
+      [9, 12, 12, 16]
+    ]} \printobj{np.ravel(B)}$$
+
+
+    \item[\textbf{(e)}] $L ( X ) = X + X ^ { t }$
+        
+    \begin{pycode}
+C = (B + sympy.Transpose(B)).doit()
+    \end{pycode}
+
+    \ans 
+
+    $$\printobj{B} + \printobj{sympy.Transpose(B).doit()} = \printobj{C}$$
+    $$\printobj{np.ravel(C)} 
+    = \printobj{[
+      [2, 0, 0, 0],
+      [0, 1, 1, 0],
+      [0, 1, 1, 0],
+      [0, 0, 0, 2]
+    ]} \printobj{np.ravel(B)}$$ 
+
+  \end{enumerate}
+\end{question}
+
+\begin{question}{3.130}
+  Compute the matrix $M$ with respect to the standard ordered basis of $\mathcal { P } _ { 2 }$ for
+  the linear transformation $L : \mathcal { P } _ { 2 } \rightarrow \mathcal { P } _ { 2 } ,$ where:
+
+  \begin{enumerate}
+    \item[\textbf{(c)}] $L ( y ) = y ^ { \prime } - y$
+    
+    \ans 
+
+    \begin{align*}
+      L(a + bx + cx^2) &= (a + bx + cx^2) ^ { \prime } - (a + bx + cx^2) \\
+      &= b + 2cx - a - bx - cx^2 \\
+      &= b - a + (2c - b)x - cx^2
+    \end{align*}
+
+    $$\printobj{[
+      ['-a + b'],
+      ['-b + 2*c'],
+      ['-c'],
+    ]} = \printobj{[
+      [-1, 1, 0],
+      [0, -1, 2],
+      [0, 0, -1]
+    ]} \printobj{['a', 'b', 'c']}$$
+
+    \item[\textbf{(d)}] $L ( y ) = y ^ { \prime } + 3 y$
+    
+    \ans
+
+    \begin{align*}
+      L(a + bx + cx^2) &= (a + bx + cx^2) ^ { \prime } + 3 (a + bx + cx^2) \\
+      &= b + 2cx + 3a + 3bx + 3cx^2 \\
+      &= (3a + b) + (2c + 3b)x + 3cx^2
+    \end{align*}
+
+    $$\printobj{[
+      ['3*a + b'],
+      ['2*c + 3*b'],
+      ['3*c'],
+    ]} = \printobj{[
+      [3, 1, 0],
+      [0, 3, 2],
+      [0, 0, 3]
+    ]} \printobj{['a', 'b', 'c']}$$
+
+    \item[\textbf{(e)}] $L ( y ) = x ^ { 2 } y ^ { \prime \prime } + 3 x y ^ { \prime } - 7 y$
+    
+    \ans 
+
+    \begin{align*}
+      L(a + bx + cx^2) 
+      &= x ^ { 2 } (a + bx + cx^2) ^ { \prime \prime } + 3 x (a + bx + cx^2) ^ { \prime } - 7 (a + bx + cx^2) \\
+      &= x^2 (2c) + 3x (b + 2cx) - 7(a + bx + cx^2) \\
+      &= 2cx^2 + 3bx + 6cx^2 - 7a - 7bx - 7cx^2 \\
+      &= -7a - 4bx + cx^2
+    \end{align*}
+
+    $$\printobj{[
+      ['-7*a'],
+      ['-4*b'],
+      ['c'],
+    ]} = \printobj{[
+      [-7, 0, 0],
+      [0, -4, 0],
+      [0, 0, 1]
+    ]} \printobj{['a', 'b', 'c']}$$
+
+  \end{enumerate}
+\end{question}
+
+\end{document}

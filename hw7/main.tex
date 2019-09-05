@@ -1,0 +1,842 @@
+\documentclass[letterpaper]{article}
+
+%% Sets page size and margins
+\usepackage[letterpaper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+ 
+%% Useful packages
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{mathtools}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{pythontex}
+\usepackage{lastpage}
+\usepackage{fancyhdr}
+
+\pagestyle{fancy}
+\graphicspath{ {images/} }
+\newcommand{\true}{$T$}
+\newcommand{\false}{$F$}
+\newcommand{\ans}{\textit{Answer: }}
+\newcommand{\prf}{\textbf{Proof:}}
+\newenvironment{question}[2][Question]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+
+\allowdisplaybreaks
+
+% Fancy matrix
+\makeatletter
+\renewcommand*\env@matrix[1][*\c@MaxMatrixCols c]{%
+  \hskip -\arraycolsep
+  \let\@ifnextchar\new@ifnextchar
+  \array{#1}}
+\makeatother
+
+% My scripts setup
+\begin{pycode}
+import sympy
+import numpy as np
+
+import sys
+sys.path.append('..')
+
+from utils import Utils
+utils = Utils(pytex)
+sympify = np.vectorize(sympy.sympify)
+
+# display det
+ddet = utils.print.print_matrix_det
+\end{pycode}
+
+\newcommand{\printobj}[1]{\py{utils.print.print_object(#1)}}
+
+\title{MA 351, HW 7} 
+\lhead{MA 351, HW 7}
+
+\author{Elnard Utiushev}
+\rhead{Elnard Utiushev}
+\cfoot{\thepage\ of \pageref{LastPage}}
+
+\begin{document}
+
+\maketitle
+
+Section 4.2.1: Exercises: 4.31, 4.33 \\ 
+Section 4.3: Exercises: 4.35, 4.36, 4.38, 4.43 \\
+Section 5.1: True/False 5.1, 5.4, 5.5, 5.6, 5.11; Exercises: 5.5, 5.11, 5.12, 5.13
+
+\section{Section 4.2.1}
+\subsection{Exercises}
+
+\begin{question}{4.31}
+  Use volume to explain why it is expected that the determinant of a \(3 \times 3\) matrix
+  with linearly dependent columns has determinant zero.
+
+  \ans If columns are linearly independent, the vectors that \(3 \times 3\) matrix 
+  describes will be in the same plane, which makes volume equal to zero.
+  
+\end{question}
+
+\begin{question}{4.33}
+  Use volume to explain why it is expected that for \(3 \times 3\) matrices \(B\) and \(C \)
+\(|\operatorname{det}(B C)|=|\operatorname{det} B||\operatorname{det} C| .[\)Hint\(:\) Use Theorem \(4.13 .] \)
+  
+  \ans Lets take an object with the volume of 1. By applying $B$ on that object, we 
+  will get that the volume of that object has changed to $det(B)$. Similarly, with $C$.
+  Applying both of those, the resulting volume will be $det(B) * det(C)$.
+\end{question}
+
+\section{Section 4.3}
+\subsection{Exercises}
+
+\begin{question}{4.35}
+  Use Cramer's rule to express the value of \(y\) in system \((a)\) and the value of \(z\) in
+  system \((b)\) as a ratio of two determinants. Do not evaluate the determinants.
+
+  \begin{enumerate}[label=\textbf{(\alph*)}]
+    \item 
+    $$
+    \begin{aligned} 2 x+y+3 z+w &=4 \\ x+4 y+2 z-3 w &=-1 \\-x+y+z+w &=0 \\ 4 x-y+z+2 w &=0 \end{aligned}
+    $$
+
+    \ans 
+
+    $$
+    y = \frac{
+      \py{ddet([
+      [2, 4, 3, 1],
+      [1, -1, 2, -3],
+      [-1, 0, 1, 1],
+      [4, 0, 1, 2]
+      ])}
+    }{
+      \py{ddet([
+      [2, 1, 3, 1],
+      [1, 4, 2, -3],
+      [-1, 1, 1, 1],
+      [4, -1, 1, 2]
+      ])}
+    }
+    $$
+
+    \item
+    $$
+    \begin{array}{c}{x+3 y+z=1} \\ {3 x+4 y+5 z=7} \\ {2 x+5 y+7 z=2}\end{array}
+    $$
+
+    \ans 
+
+    $$
+    z = \frac{
+      \py{ddet([
+        [1, 3, 1],
+        [3, 4, 7],
+        [2, 5, 2]
+      ])}
+    }{
+      \py{ddet([
+        [1, 3, 1],
+        [3, 4, 5],
+        [2, 5, 7]
+      ])}
+    }
+    $$
+  \end{enumerate}
+  
+\end{question}
+
+\begin{question}{4.36}
+  Use Cramer's rule to solve the following system for z in terms of $p_{1}, p_{2},$ and
+  $p_{3} .($ Note that we have not asked for $x$ or $y .) $
+
+  $$
+  \begin{array}{c}{x+2 y-3 z=p_{1}} \\ {3 x+y-z=p_{2}} \\ {2 x+3 y+5 z=p_{3}}\end{array}
+  $$
+
+  \begin{pycode}
+problem0 = sympify([
+  [1, 2, -3],
+  [3, 1, -1],
+  [2, 3, 5]
+])
+
+problem1 = sympify([
+  [1, 2, 'p_1'],
+  [3, 1, 'p_2'],
+  [2, 3, 'p_3']
+])
+
+det_0, sol_0 = utils.algorithms.det(problem0)
+det_1, sol_1 = utils.algorithms.det(problem1)
+  \end{pycode}
+
+  \ans 
+
+  $$\py{utils.print.print_matrix_det(problem1)} = \py{sol_1} = \py{det_1}$$
+
+  $$\py{utils.print.print_matrix_det(problem0)} = \py{sol_0} = \py{det_0}$$
+
+  $$\frac{
+    \py{utils.print.print_matrix_det(problem1)}
+    }{
+    \py{utils.print.print_matrix_det(problem0)}
+    } = \frac{\py{det_1}}{\py{det_0}}$$
+\end{question}
+
+\begin{question}{4.38}
+  Use Theorem 4.15 to find the $(1,2)$ entry for the inverse of each invertible
+  matrix in Exercise 4.12 on page 258
+
+  \begin{pycode}
+problems = [
+  [[1, 0, 1], [2, 1, 1], [3, 2, 1]],
+  [[-3, 2, 2], [1, 4, 1], [7, 6, -2]],
+  [[2, 0, 2, 0], [1, 1, 1, 1], [0, 0, 3, 2], [1, 0, 0, 5]],
+  [[3, 1, 3, 0], [3, 1, 3, 1], [0, 0, 2, 1], [6, 3, 4, 5]],
+  [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]],
+  [[2, 3, 2, 0], [9, 0, 1, 1], [1, 0, 1, 4], [13, 10, 0, 9]]
+]
+
+problems = map(np.array, problems)
+
+solution = "\\begin{enumerate}[label=\\textbf{(\\alph*)}]\n"
+for problem in problems:
+  det, _ = utils.algorithms.det(problem)
+  solution += "\\item\n$$"
+
+  if det == 0:
+    solution += ddet(problem)
+    solution += "= 0"
+    solution += ",\\quad\\text{Matrix is not invertible}"
+  else:
+    solution += utils.print(problem)
+    solution += ",\\quad"
+    solution += "(A^{-1})_{12} = "
+
+    inter = problem[:, 1:]
+    inter = np.delete(inter, [1], 0)
+
+    solution += "\\frac{-" + ddet(inter) + "}{" + ddet(problem) + "} = "
+    
+    inter_det, _ = utils.algorithms.det(inter)
+
+    solution += "\\frac{" + str(-1 * inter_det) + "}{" + str(det) + "}"
+
+  solution += "$$\n"
+
+solution += "\\end{enumerate}\n"
+  \end{pycode}
+
+  \ans 
+
+  \py{solution}
+  
+\end{question}
+
+\begin{question}{4.43}
+  Let $A$ be an $n \times n$ matrix that has only integers as entries. State a necessary and
+  sufficient condition on the determinant of such a matrix that guarantees that
+  the inverse has only integers as entries. Prove your condition. [Hint: Consider
+  the property $A A^{-1}=I . ] $
+
+  \ans 
+  \begin{gather*}
+    \det(AA^{-1}) = \det(I) = 1 \\
+    \det(AA^{-1}) = \det(A)\det(A^{-1}) \\
+    \det(A)\det(A^{-1}) = 1
+  \end{gather*}
+
+  Therefore, the inverse has only integers as entries if and only if $\det(A) = \pm 1$ 
+
+\end{question}
+
+\section{Section 5.1}
+\subsection{True/False}
+
+\begin{question}{5.1}
+  If $A$ is an $n \times n$ matrix that has zero for an eigenvalue, then $A$ cannot be invertible.
+
+  \ans True, 
+  \begin{gather*}
+    (A - 0I)X = 0 \\
+    AX = 0 \\
+    A^{-1}AX = A^{-1} 0 \\
+    X = 0
+  \end{gather*}
+  
+\end{question}
+
+\begin{question}{5.4}
+  The sum of two eigenvectors is an eigenvector.
+
+  \ans False, for example, $\py{utils.print([[4, 0], [0, 5]])}$. Eigenvectors for that matrix 
+  are $\py{utils.print([1, 0])}, \py{utils.print([0, 1])}$. Their sum is $\py{utils.print([1, 1])}$ is 
+  not an eigenvector.
+  
+\end{question}
+
+\begin{question}{5.5}
+  If $X$ is an eigenvector for $A$ with eigenvalue $3,$ then 2$X$ is an eigenvector for $A $
+  with eigenvalue $6 . $
+
+  \ans False, $2X$ will still have the eigenvalue of 3. 
+  
+\end{question}
+
+\begin{question}{5.6}
+  If $X$ is an eigenvector for an $n \times n$ matrix $A,$ then $X$ is also an eigenvector for
+  2$A . $
+
+  \ans True, 
+  \begin{gather*}
+    AX = \lambda X \\
+    2AX = 2\lambda X \\
+    (2A)X = (2\lambda) X
+  \end{gather*}
+  
+\end{question}
+
+\begin{question}{5.11}
+  There is a $3 \times 3$ matrix with eigenvalues $1,2,3,$ and 4
+
+  \ans False, since the cubic polynomial cannot have 4 roots.
+  
+\end{question}
+
+\subsection{Exercises}
+
+\begin{question}{5.5}
+  For the following matrices, find all eigenvalues and a basis for each eigenspace.
+  State whether or not the given matrix is diagonalizable over $\mathbb{R}$ .
+
+  \begin{enumerate}[label=\textbf{(\alph*)}]
+    \begin{pycode}
+problem = sympify([[-18, 30], [-10, 17]])
+lambda_ = sympy.Symbol("\\lambda")
+inter = problem - lambda_ * sympify(np.eye(problem.shape[0]).astype(int))
+det, _ = utils.algorithms.det(inter)
+det = sympy.factor(det)
+
+roots = sympy.solvers.solve(det, lambda_)
+
+solution = "\\begin{enumerate}[label=\\arabic*.]\n"
+for root in roots:
+  solution += "\\item$\\lambda = {}$\n".format(root)
+  eigen_prep = problem - root * np.eye(problem.shape[0]).astype(int)
+  rref, _ = utils.algorithms.rref(np.c_[eigen_prep, np.zeros((problem.shape[0], 1)).astype(int)])
+  matrix_sol, _ = utils.algorithms.show_solutions(rref)
+
+  solution += "$$A - ({}) I = ".format(root)
+  solution += utils.print(eigen_prep)
+  solution += "$$\n"
+  solution += "$$" + utils.print(np.c_[eigen_prep, np.zeros((problem.shape[0], 1)).astype(int)])
+  solution += "\\xrightarrow{rref}" + utils.print(rref)
+  solution += "$$\n"
+
+  solution += "Eigenvectors: $"
+
+  sep = ""
+  for vec in matrix_sol['param_vecs']:
+    if not (vec == 0).all():
+      solution += sep + utils.print(vec)
+      sep = ",\\quad"
+
+  solution += "$\n"
+
+solution += "\\end{enumerate}"
+
+    \end{pycode}
+
+    \item $$\py{utils.print(problem)}$$
+    \ans
+
+    $$\det(A - \lambda I) = \py{utils.print.print_matrix_det(inter)} = \printobj{det} = 0$$
+    $\lambda = \py{", ".join(map(str, roots))}$
+
+    \py{solution}
+
+    Matrix is diagonalizable
+% ----------------------
+    \begin{pycode}
+problem = sympify([[10, -17], [6, -10]])
+lambda_ = sympy.Symbol("\\lambda")
+inter = problem - lambda_ * sympify(np.eye(problem.shape[0]).astype(int))
+det, _ = utils.algorithms.det(inter)
+det = sympy.factor(det)
+
+roots = sympy.solvers.solve(det, lambda_)
+
+solution = "\\begin{enumerate}[label=\\arabic*.]\n"
+for root in roots:
+  solution += "\\item$\\lambda = {}$\n".format(root)
+  eigen_prep = problem - root * np.eye(problem.shape[0]).astype(int)
+  rref, _ = utils.algorithms.rref(np.c_[eigen_prep, np.zeros((problem.shape[0], 1)).astype(int)])
+  matrix_sol, _ = utils.algorithms.show_solutions(rref)
+
+  solution += "$$A - ({}) I = ".format(root)
+  solution += utils.print(eigen_prep)
+  solution += "$$\n"
+  solution += "$$" + utils.print(np.c_[eigen_prep, np.zeros((problem.shape[0], 1)).astype(int)])
+  solution += "\\xrightarrow{rref}" + utils.print(rref)
+  solution += "$$\n"
+
+  solution += "Eigenvectors: $"
+
+  sep = ""
+  for vec in matrix_sol['param_vecs']:
+    if not (vec == 0).all():
+      solution += sep + utils.print(vec)
+      sep = ",\\quad"
+
+  solution += "$\n"
+
+solution += "\\end{enumerate}"
+
+    \end{pycode}
+
+    \item $$\py{utils.print(problem)}$$
+    \ans
+
+    $$\det(A - \lambda I) = \py{utils.print.print_matrix_det(inter)} = \printobj{det} = 0$$
+    $\lambda = \py{", ".join(map(utils.print, roots))}$
+
+    % $\py{solution}$
+    Matrix is not diagonalizable over real numbers
+% ----------------------
+    \begin{pycode}
+problem = sympify([[-12, 21], [-6, 11]])
+lambda_ = sympy.Symbol("\\lambda")
+inter = problem - lambda_ * sympify(np.eye(problem.shape[0]).astype(int))
+det, _ = utils.algorithms.det(inter)
+det = sympy.factor(det)
+
+roots = sympy.solvers.solve(det, lambda_)
+
+solution = "\\begin{enumerate}[label=\\arabic*.]\n"
+for root in roots:
+  solution += "\\item$\\lambda = {}$\n".format(root)
+  eigen_prep = problem - root * np.eye(problem.shape[0]).astype(int)
+  rref, _ = utils.algorithms.rref(np.c_[eigen_prep, np.zeros((problem.shape[0], 1)).astype(int)])
+  matrix_sol, _ = utils.algorithms.show_solutions(rref)
+
+  solution += "$$A - ({}) I = ".format(root)
+  solution += utils.print(eigen_prep)
+  solution += "$$\n"
+  solution += "$$" + utils.print(np.c_[eigen_prep, np.zeros((problem.shape[0], 1)).astype(int)])
+  solution += "\\xrightarrow{rref}" + utils.print(rref)
+  solution += "$$\n"
+
+  solution += "Eigenvectors: $"
+
+  sep = ""
+  for vec in matrix_sol['param_vecs']:
+    if not (vec == 0).all():
+      solution += sep + utils.print(vec)
+      sep = ",\\quad"
+
+  solution += "$\n"
+
+solution += "\\end{enumerate}"
+
+    \end{pycode}
+
+    \item $$\py{utils.print(problem)}$$
+    \ans
+
+    $$\det(A - \lambda I) = \py{utils.print.print_matrix_det(inter)} = \printobj{det} = 0$$
+    $\lambda = \py{", ".join(map(str, roots))}$
+
+    \py{solution}
+
+    Matrix is diagonalizable
+% ----------------------
+    \begin{pycode}
+problem = sympify([[2, 12, -8], [0, -8, 6], [0, -9, 7]])
+lambda_ = sympy.Symbol("\\lambda")
+inter = problem - lambda_ * sympify(np.eye(problem.shape[0]).astype(int))
+det, _ = utils.algorithms.det(inter)
+det = sympy.factor(det)
+
+roots = sympy.solvers.solve(det, lambda_)
+
+solution = "\\begin{enumerate}[label=\\arabic*.]\n"
+for root in roots:
+  solution += "\\item$\\lambda = {}$\n".format(root)
+  eigen_prep = problem - root * np.eye(problem.shape[0]).astype(int)
+  rref, _ = utils.algorithms.rref(np.c_[eigen_prep, np.zeros((problem.shape[0], 1)).astype(int)])
+  matrix_sol, _ = utils.algorithms.show_solutions(rref)
+
+  solution += "$$A - ({}) I = ".format(root)
+  solution += utils.print(eigen_prep)
+  solution += "$$\n"
+  solution += "$$" + utils.print(np.c_[eigen_prep, np.zeros((problem.shape[0], 1)).astype(int)])
+  solution += "\\xrightarrow{rref}" + utils.print(rref)
+  solution += "$$\n"
+
+  solution += "Eigenvectors: $"
+
+  sep = ""
+  for vec in matrix_sol['param_vecs']:
+    if not (vec == 0).all():
+      solution += sep + utils.print(vec)
+      sep = ",\\quad"
+
+  solution += "$\n"
+
+solution += "\\end{enumerate}"
+
+    \end{pycode}
+
+    \item $$\py{utils.print(problem)}$$
+    \ans
+
+    $$\det(A - \lambda I) = \py{utils.print.print_matrix_det(inter)} = \printobj{det} = 0$$
+    $\lambda = \py{", ".join(map(str, roots))}$
+
+    \py{solution}
+
+    Matrix is diagonalizable
+% ----------------------
+    \begin{pycode}
+problem = sympify([[2, 0, 0], [-2, -2, 2], [-5, -10, 7]])
+lambda_ = sympy.Symbol("\\lambda")
+inter = problem - lambda_ * sympify(np.eye(problem.shape[0]).astype(int))
+det, _ = utils.algorithms.det(inter)
+det = sympy.factor(det)
+
+roots = sympy.solvers.solve(det, lambda_)
+
+solution = "\\begin{enumerate}[label=\\arabic*.]\n"
+for root in roots:
+  solution += "\\item$\\lambda = {}$\n".format(root)
+  eigen_prep = problem - root * np.eye(problem.shape[0]).astype(int)
+  rref, _ = utils.algorithms.rref(np.c_[eigen_prep, np.zeros((problem.shape[0], 1)).astype(int)])
+  matrix_sol, _ = utils.algorithms.show_solutions(rref)
+
+  solution += "$$A - ({}) I = ".format(root)
+  solution += utils.print(eigen_prep)
+  solution += "$$\n"
+  solution += "$$" + utils.print(np.c_[eigen_prep, np.zeros((problem.shape[0], 1)).astype(int)])
+  solution += "\\xrightarrow{rref}" + utils.print(rref)
+  solution += "$$\n"
+
+  solution += "Eigenvectors: $"
+
+  sep = ""
+  for vec in matrix_sol['param_vecs']:
+    if not (vec == 0).all():
+      solution += sep + utils.print(vec)
+      sep = ",\\quad"
+
+  solution += "$\n"
+
+solution += "\\end{enumerate}"
+
+    \end{pycode}
+
+    \item $$\py{utils.print(problem)}$$
+    \ans
+
+    $$\det(A - \lambda I) = \py{utils.print.print_matrix_det(inter)} = \printobj{det} = 0$$
+    $\lambda = \py{", ".join(map(str, roots))}$
+
+    \py{solution}
+
+    Matrix is diagonalizable
+% ----------------------
+    \begin{pycode}
+problem = sympify([[0, -5, 2], [-2, -2, 2], [-7, -15, 9]])
+lambda_ = sympy.Symbol("\\lambda")
+inter = problem - lambda_ * sympify(np.eye(problem.shape[0]).astype(int))
+det, _ = utils.algorithms.det(inter)
+det = sympy.factor(det)
+
+roots = sympy.solvers.solve(det, lambda_)
+
+solution = "\\begin{enumerate}[label=\\arabic*.]\n"
+for root in roots:
+  solution += "\\item$\\lambda = {}$\n".format(root)
+  eigen_prep = problem - root * np.eye(problem.shape[0]).astype(int)
+  rref, _ = utils.algorithms.rref(np.c_[eigen_prep, np.zeros((problem.shape[0], 1)).astype(int)])
+  matrix_sol, _ = utils.algorithms.show_solutions(rref)
+
+  solution += "$$A - ({}) I = ".format(root)
+  solution += utils.print(eigen_prep)
+  solution += "$$\n"
+  solution += "$$" + utils.print(np.c_[eigen_prep, np.zeros((problem.shape[0], 1)).astype(int)])
+  solution += "\\xrightarrow{rref}" + utils.print(rref)
+  solution += "$$\n"
+
+  solution += "Eigenvectors: $"
+
+  sep = ""
+  for vec in matrix_sol['param_vecs']:
+    if not (vec == 0).all():
+      solution += sep + utils.print(vec)
+      sep = ",\\quad"
+
+  solution += "$\n"
+
+solution += "\\end{enumerate}"
+
+    \end{pycode}
+
+    \item $$\py{utils.print(problem)}$$
+    \ans
+
+    $$\det(A - \lambda I) = \py{utils.print.print_matrix_det(inter)} = \printobj{det} = 0$$
+    $\lambda = \py{", ".join(map(str, roots))}$
+
+    \py{solution}
+
+    Matrix is not diagonalizable
+% ----------------------
+    \begin{pycode}
+problem = sympify([[10, -24, 7], [6, -14, 4], [6, -15, 5]])
+lambda_ = sympy.Symbol("\\lambda")
+inter = problem - lambda_ * sympify(np.eye(problem.shape[0]).astype(int))
+det, _ = utils.algorithms.det(inter)
+det = sympy.factor(det)
+
+roots = sympy.solvers.solve(det, lambda_)
+
+solution = "\\begin{enumerate}[label=\\arabic*.]\n"
+for root in roots:
+  if not root.is_real:
+      continue
+
+  solution += "\\item$\\lambda = {}$\n".format(root)
+  eigen_prep = problem - root * np.eye(problem.shape[0]).astype(int)
+  rref, _ = utils.algorithms.rref(np.c_[eigen_prep, np.zeros((problem.shape[0], 1)).astype(int)])
+  matrix_sol, _ = utils.algorithms.show_solutions(rref)
+
+  solution += "$$A - ({}) I = ".format(root)
+  solution += utils.print(eigen_prep)
+  solution += "$$\n"
+  solution += "$$" + utils.print(np.c_[eigen_prep, np.zeros((problem.shape[0], 1)).astype(int)])
+  solution += "\\xrightarrow{rref}" + utils.print(rref)
+  solution += "$$\n"
+
+  solution += "Eigenvectors: $"
+
+  sep = ""
+  for vec in matrix_sol['param_vecs']:
+    if not (vec == 0).all():
+      solution += sep + utils.print(vec)
+      sep = ",\\quad"
+
+  solution += "$\n"
+
+solution += "\\end{enumerate}"
+
+    \end{pycode}
+
+    \item $$\py{utils.print(problem)}$$
+    \ans
+
+    $$\det(A - \lambda I) = \py{utils.print.print_matrix_det(inter)} = \printobj{det} = 0$$
+    $\lambda = \py{", ".join(map(utils.print, roots))}$
+
+    \py{solution}
+
+    Matrix is not diagonalizable over real numbers
+% ----------------------
+    \begin{pycode}
+problem = sympify([[-2, -1, 1], [-6, -2, 0], [13, 7, -4]])
+lambda_ = sympy.Symbol("\\lambda")
+inter = problem - lambda_ * sympify(np.eye(problem.shape[0]).astype(int))
+det, _ = utils.algorithms.det(inter)
+det = sympy.factor(det)
+
+roots = sympy.solvers.solve(det, lambda_)
+
+solution = "\\begin{enumerate}[label=\\arabic*.]\n"
+for root in roots:
+  if not root.is_real:
+      continue
+
+  solution += "\\item$\\lambda = {}$\n".format(root)
+  eigen_prep = problem - root * np.eye(problem.shape[0]).astype(int)
+  rref, _ = utils.algorithms.rref(np.c_[eigen_prep, np.zeros((problem.shape[0], 1)).astype(int)])
+  matrix_sol, _ = utils.algorithms.show_solutions(rref)
+
+  solution += "$$A - ({}) I = ".format(root)
+  solution += utils.print(eigen_prep)
+  solution += "$$\n"
+  solution += "$$" + utils.print(np.c_[eigen_prep, np.zeros((problem.shape[0], 1)).astype(int)])
+  solution += "\\xrightarrow{rref}" + utils.print(rref)
+  solution += "$$\n"
+
+  solution += "Eigenvectors: $"
+
+  sep = ""
+  for vec in matrix_sol['param_vecs']:
+    if not (vec == 0).all():
+      solution += sep + utils.print(vec)
+      sep = ",\\quad"
+
+  solution += "$\n"
+
+solution += "\\end{enumerate}"
+
+    \end{pycode}
+
+    \item $$\py{utils.print(problem)}$$
+    \ans
+
+    $$\det(A - \lambda I) = \py{utils.print.print_matrix_det(inter)} = \printobj{det} = 0$$
+    $\lambda = \py{", ".join(map(utils.print, roots))}$
+
+    \py{solution}
+
+    Matrix is not diagonalizable over real numbers
+% ----------------------
+    \begin{pycode}
+problem = sympify([[1, 2, 0], [-3, 2, 3], [-1, 2, 2]])
+lambda_ = sympy.Symbol("\\lambda")
+inter = problem - lambda_ * sympify(np.eye(problem.shape[0]).astype(int))
+det, _ = utils.algorithms.det(inter)
+det = sympy.factor(det)
+
+roots = sympy.solvers.solve(det, lambda_)
+
+solution = "\\begin{enumerate}[label=\\arabic*.]\n"
+for root in roots:
+  solution += "\\item$\\lambda = {}$\n".format(root)
+  eigen_prep = problem - root * np.eye(problem.shape[0]).astype(int)
+  rref, _ = utils.algorithms.rref(np.c_[eigen_prep, np.zeros((problem.shape[0], 1)).astype(int)])
+  matrix_sol, _ = utils.algorithms.show_solutions(rref)
+
+  solution += "$$A - ({}) I = ".format(root)
+  solution += utils.print(eigen_prep)
+  solution += "$$\n"
+  solution += "$$" + utils.print(np.c_[eigen_prep, np.zeros((problem.shape[0], 1)).astype(int)])
+  solution += "\\xrightarrow{rref}" + utils.print(rref)
+  solution += "$$\n"
+
+  solution += "Eigenvectors: $"
+
+  sep = ""
+  for vec in matrix_sol['param_vecs']:
+    if not (vec == 0).all():
+      solution += sep + utils.print(vec)
+      sep = ",\\quad"
+
+  solution += "$\n"
+
+solution += "\\end{enumerate}"
+
+    \end{pycode}
+
+    \item $$\py{utils.print(problem)}$$
+    \ans
+
+    $$\det(A - \lambda I) = \py{utils.print.print_matrix_det(inter)} = \printobj{det} = 0$$
+    $\lambda = \py{", ".join(map(str, roots))}$
+
+    \py{solution}
+
+    Matrix is not diagonalizable
+% ----------------------
+    \begin{pycode}
+problem = sympify([[1, 3, 0, 0], [3, 1, 0, 0], [0, 0, -1, 2], [0, 0, -1, -4]])
+lambda_ = sympy.Symbol("\\lambda")
+inter = problem - lambda_ * sympify(np.eye(problem.shape[0]).astype(int))
+det, _ = utils.algorithms.det(inter)
+det = sympy.factor(det)
+
+roots = sympy.solvers.solve(det, lambda_)
+
+solution = "\\begin{enumerate}[label=\\arabic*.]\n"
+for root in roots:
+  if not root.is_real:
+    continue
+
+  solution += "\\item$\\lambda = {}$\n".format(root)
+  eigen_prep = problem - root * np.eye(problem.shape[0]).astype(int)
+  rref, _ = utils.algorithms.rref(np.c_[eigen_prep, np.zeros((problem.shape[0], 1)).astype(int)])
+  matrix_sol, _ = utils.algorithms.show_solutions(rref)
+
+  solution += "$$A - ({}) I = ".format(root)
+  solution += utils.print(eigen_prep)
+  solution += "$$\n"
+  solution += "$$" + utils.print(np.c_[eigen_prep, np.zeros((problem.shape[0], 1)).astype(int)])
+  solution += "\\xrightarrow{rref}" + utils.print(rref)
+  solution += "$$\n"
+
+  solution += "Eigenvectors: $"
+
+  sep = ""
+  for vec in matrix_sol['param_vecs']:
+    if not (vec == 0).all():
+      solution += sep + utils.print(vec)
+      sep = ",\\quad"
+
+  solution += "$\n"
+
+solution += "\\end{enumerate}"
+
+    \end{pycode}
+
+    \item $$\py{utils.print(problem)}$$
+    \ans
+
+    $$\det(A - \lambda I) = \py{utils.print.print_matrix_det(inter)} = \printobj{det} = 0$$
+    $\lambda = \py{", ".join(map(str, roots))}$
+
+    \py{solution}
+
+    Matrix is diagonalizable
+% ----------------------
+  \end{enumerate}
+\end{question}
+
+\begin{question}{5.11}
+  Suppose that $A$ is an $n \times n$ matrix such that $A^{2}=I$ and that $\lambda$ is an eigenvalue for $A .$ Prove that $\lambda=\pm 1$
+
+  \ans 
+
+  \begin{gather*}
+    AX = \lambda X \\
+    AAX = A \lambda X \\
+    IX = \lambda AX \\
+    X = \lambda \lambda X \\
+    X = \lambda^2 X 
+  \end{gather*}
+  
+  Since $X$ is a nonzero matrix, $\lambda = \pm 1$
+
+\end{question}
+
+\begin{question}{5.12}
+  Let $A$ be an $n \times n$ matrix and let $\lambda$ be an eigenvalue for $A .$ Prove that $\lambda^{2}$ is an eigenvalue for $A^{2} . $
+
+  \ans
+
+  \begin{gather*}
+    AX = \lambda X \\
+    AAX = A \lambda X \\
+    A^2X = \lambda AX \\
+    A^2X = \lambda \lambda X \\
+    A^2X = \lambda^2 X
+  \end{gather*}
+  
+\end{question}
+
+\begin{question}{5.13}
+  Suppose that $A$ in Exercise 5.12 is invertible. Prove that $\lambda^{-1}$ is an eigenvalue
+  for $A^{-1}$
+
+  \ans
+
+  \begin{gather*}
+    AX = \lambda X \\
+    A^{-1}AX = A^{-1}\lambda X \\
+    IX = \lambda A^{-1}X \\
+    \lambda^{-1} X = A^{-1}X \\
+  \end{gather*}
+  
+\end{question}
+
+\end{document}

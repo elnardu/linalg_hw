@@ -1,0 +1,320 @@
+\documentclass[letterpaper]{article}
+
+%% Sets page size and margins
+\usepackage[letterpaper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+ 
+%% Useful packages
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{mathtools}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{pythontex}
+\usepackage{lastpage}
+\usepackage{fancyhdr}
+
+\pagestyle{fancy}
+\graphicspath{ {images/} }
+\newcommand{\true}{$T$}
+\newcommand{\false}{$F$}
+\newcommand{\ans}{\textit{Answer: }}
+\newcommand{\prf}{\textbf{Proof:}}
+\newenvironment{question}[2][Question]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+
+\allowdisplaybreaks
+
+% Fancy matrix
+\makeatletter
+\renewcommand*\env@matrix[1][*\c@MaxMatrixCols c]{%
+  \hskip -\arraycolsep
+  \let\@ifnextchar\new@ifnextchar
+  \array{#1}}
+\makeatother
+
+% My scripts setup
+\begin{pycode}
+import sympy
+import numpy as np
+
+import sys
+sys.path.append('..')
+
+from utils import Utils
+utils = Utils(pytex)
+sympify = np.vectorize(sympy.sympify)
+
+# display det
+ddet = utils.print.print_matrix_det
+\end{pycode}
+
+\newcommand{\printobj}[1]{\py{utils.print.print_object(#1)}}
+
+\title{MA 351, HW 9} 
+\lhead{MA 351, HW 9}
+
+\author{Elnard Utiushev}
+\rhead{Elnard Utiushev}
+\cfoot{\thepage\ of \pageref{LastPage}}
+
+\begin{document}
+
+\maketitle
+
+Section 6.1: True/False: 6.1, 6.4, 6.5, 6.6, 6.7 \\
+Exercises: 6.1, 6.3, 6.9, 6.13, 6.14, 6.15
+
+\section{Section 6.1}
+\subsection{True/False}
+
+\begin{question}{6.1}
+  Let $\left\{P_{1}, P_{2}, P_{3}\right\}$ be an orthogonal subset of 
+  $\mathbb{R}^{3} .$ Suppose that $X=P_{1}-2 P_{2}+$
+  3$P_{3}$ satisfies $X \cdot P_{3}=6 .$ Then $\left|P_{3}\right|=2$
+
+  \ans False, 
+  $$X \cdot P_3 = (P_1 - 2P_2 + 3P_3) P_3 = P_1\cdot P_3 - 2P_2\cdot P_3 + 3P_3\cdot P_3
+  = 3 |P_3|^2 = 6$$
+  $$|P_3| = \sqrt{6/3} = \sqrt{2}$$
+\end{question}
+
+\begin{question}{6.4}
+  The vectors $P_{1}=[1,1]^{t}$ and $P_{2}=[1,3]^{t}$ are perpendicular.
+
+  \ans False,
+
+  $$1*1 + 1*3 = 1+3 \neq 0$$
+\end{question}
+
+\begin{question}{6.5}
+  If $X \cdot Y=0,$ then either $X=\mathbf{0}$ or $Y=\mathbf{0}$
+  
+  \ans False, $Y = [1, 0]^t$, $X = [0, 1]^t$, $X \cdot Y = 0$
+\end{question}
+
+\begin{question}{6.6}
+  $X \cdot(Y \cdot Z)=(X \cdot Y) \cdot Z$
+  
+  \ans False, dot product is not associative, since dot product produces a scalar 
+  and is not defined for a scalar and a vector.
+\end{question}
+
+\begin{question}{6.7}
+  $(X-Y) \cdot(X+Y)=|X|^{2}-|Y|^{2}$
+
+  \ans True,
+
+  \begin{align*}
+    (X-Y) \cdot(X+Y) &= (X-Y) \cdot X + (X-Y) \cdot Y \\
+    &= |X|^{2} - Y \cdot X + X \cdot Y - |Y|^{2} = |X|^{2}-|Y|^{2}
+  \end{align*}
+  
+\end{question}
+
+\subsection{Exercises}
+
+\begin{question}{6.1}
+  For each pair of vectors $X$ and $Y$ below, find (i) the distance between $X$ and $Y$
+  (ii) $|X|$ and $|Y|,$ (iii) $X \cdot Y,$ and (iv) the angle between $X$ and $Y .$
+  
+  \ans 
+
+  \begin{pycode}
+problems = [
+  ([3, 4], [-1, 2]),
+  ([-3, 2], [-4, 7]),
+  ([1, 2, 3], [-1, 1, 2]),
+  ([1, 1, 0, 2], [1, 1, 1, -3])
+]
+
+solution = "\\begin{enumerate}[label=(\\alph*)]\n"
+for problem in problems:
+  solution += f"\\item ${utils.print.print_list_of_arrays(problem)}$\n"
+  solution += "\\begin{itemize}\n"
+  
+  X, Y = problem
+  X = np.array(X)
+  Y = np.array(Y)
+
+  distance_sol = []
+  for x, y in zip(*problem):
+    if x < 0:
+      x = f"({x})"
+    if y < 0:
+      y = f"({y})"
+    distance_sol.append(f"({x} - {y})^2")
+
+  distance_sol = "+".join(distance_sol)
+  distance_sol = f"\\sqrt{{{distance_sol}}} = {np.linalg.norm(X - Y)}"
+
+  solution += f"\\item Distance ${distance_sol}$\n"
+
+  X_len_sol = []
+  for x in X:
+    X_len_sol.append(f"({x})^2")
+
+  X_len_sol = "+".join(X_len_sol)
+  X_len_sol = f"\\sqrt{{{X_len_sol}}} = {np.linalg.norm(X)}"
+
+  solution += f"\\item $|X| = {X_len_sol}$\n"
+
+  Y_len_sol = []
+  for y in Y:
+    Y_len_sol.append(f"({y})^2")
+
+  Y_len_sol = "+".join(Y_len_sol)
+  Y_len_sol = f"\\sqrt{{{Y_len_sol}}} = {np.linalg.norm(Y)}"
+
+  solution += f"\\item $|Y| = {Y_len_sol}$\n"
+
+  dot_sol = []
+  for x, y in zip(*problem):
+    if x < 0:
+      x = f"({x})"
+    if y < 0:
+      y = f"({y})"
+    dot_sol.append(f"{x} \cdot {y}")
+
+  dot_sol = "+".join(dot_sol)
+  dot_sol = f"{dot_sol} = {X @ Y}"
+
+  solution += f"\\item $X \\cdot Y = {dot_sol}$\n"
+
+  angle_sol = f"\\text{{arccos}}\\dfrac{{{X @ Y}}}{{{np.linalg.norm(X)} \cdot {np.linalg.norm(Y)}}}"
+  angle = np.arccos((X @ Y) / (
+    np.linalg.norm(X)
+    * np.linalg.norm(Y)
+  ))
+
+  solution += f"\\item Angle ${angle_sol} = {angle}$ rad\n"
+
+
+  solution += "\\end{itemize}\n"
+solution += "\\end{enumerate}\n"
+  \end{pycode}
+
+  \py{solution}
+
+\end{question}
+
+\begin{question}{6.3}
+  Find $c, d, e,$ and $f$ such that $[c, d, e, f]^{t}$ is perpendicular to $[a, b, a, b]^{t}$.
+
+  \ans These 2 vectors will be perpendicular if their dot product is zero
+
+  \begin{align*}
+    ca + db + ea + fb &= 0 \\
+    (c + e)a + (d + f)b &= 0 \\
+    c = -e \\
+    d = -f
+  \end{align*}
+\end{question}
+
+\begin{question}{6.9}
+  Show that the following set $\mathcal{B}$ is an orthogonal basis for $\mathbb{R}^{4} .$ Find the $\mathcal{B}$
+  coordinate vector for $X=[1,2,-1,-3]^{t}$
+
+  $$
+  \mathcal{B}=\left\{[2,-1,-1,-1]^{t},[1,3,3,-4]^{t},[1,1,0,1]^{t},[1,-2,3,1]^{t}\right\}
+  $$
+
+  \ans 
+
+  \begin{pycode}
+import itertools
+
+X = np.array([1, 2, -1, -3])
+
+basis = [
+  [2, -1, -1, -1],
+  [1, 3, 3, -4],
+  [1, 1, 0, 1],
+  [1, -2, 3, 1]
+]
+
+basis = list(map(np.array, basis))
+
+solution = "\\begin{gather*}\n"
+
+for i, j in itertools.combinations(range(4), 2):
+  solution += f"P_{i + 1} \cdot P_{j+i} = {utils.print(basis[i])} \cdot {utils.print(basis[j])}"
+  solution += f" = {basis[0] @ basis[1]}\\\\\n"
+
+solution += "\\end{gather*}\n"
+  \end{pycode}
+
+  \py{solution}
+
+  Therefore, $\mathcal{B}$ is an orthogonal basis. 
+
+  \begin{align*}
+    x_1' &= \dfrac{X\cdot P_1}{|P_1|^2} 
+    = \dfrac{\printobj{X.dot(basis[0])}}{\printobj{basis[0].dot(basis[0])}} \\
+    x_2' &= \dfrac{X\cdot P_1}{|P_1|^2} 
+    = \dfrac{\printobj{X.dot(basis[1])}}{\printobj{basis[1].dot(basis[1])}} \\
+    x_3' &= \dfrac{X\cdot P_1}{|P_1|^2} 
+    = \dfrac{\printobj{X.dot(basis[2])}}{\printobj{basis[2].dot(basis[2])}} = 0\\
+    x_4' &= \dfrac{X\cdot P_1}{|P_1|^2} 
+    = \dfrac{\printobj{X.dot(basis[3])}}{\printobj{basis[3].dot(basis[3])}} 
+  \end{align*}
+
+  $$X' = \left[4/7, 16/35, 0, -9/15\right]^t$$
+\end{question}
+
+\begin{question}{6.13}
+  Let $X$ and $Y$ be vectors in $\mathbb{R}^{n} .$ Prove that $|X|^{2}+|Y|^{2}=|X+Y|^{2}$ holds if and
+  only if $X \cdot Y=0 .$ Using a diagram, explain why this identity is referred to as
+  the Pythagorean theorem.
+  
+  \ans 
+
+  \begin{align*}
+    |X+Y|^{2} &= (X+Y)(X+Y) = X(X+Y) + Y(X+Y) \\
+    &= |X|^2 + X\cdot Y + Y\cdot X + |Y|^2 \\
+    &= |X|^2 + 2X\cdot Y + |Y|^2
+  \end{align*}
+
+  $|X|^2 + 2X\cdot Y + |Y|^2 = |X|^{2}+|Y|^{2}$ if and only if $X \cdot Y=0$
+
+  If we draw a right triangle, where $X$ and $Y$ will be legs of the right triangle.
+  We can see that if we apply Pythagorean theorem on the $X$ and $Y$, we will get 
+  the equation above. 
+\end{question}
+
+\begin{question}{6.14}
+  Prove Theorem 6.1 on page $310-$ that is, prove that if $X$ and $Y$ are vectors in
+  $\mathbb{R}^{n},$ then
+
+  $$
+  -|X||Y| \leq X \cdot Y \leq|X||Y|
+  $$
+
+  \ans If $Y = X = 0$ the proof is trivial. Assuming that $X$ and $Y$ are not 0 
+  vectors. This inequality is true, since $X \cdot Y = |X| |Y| \cos \theta$
+\end{question}
+
+\begin{question}{6.15}
+  Prove that if $X \cdot Y=\pm|X||Y|$ where $X$ and $Y$ are nonzero vectors in $\mathbb{R}^{n},$ then
+  $X /|X|=\pm Y /|Y| ;$ hence, $X$ and $Y$ are scalar multiples of each other.
+  
+  \ans Let $U = X/|X| \mp Y/|Y|$
+
+  \begin{align*}
+    U\cdot U &= (X/|X| \mp Y/|Y|)^2
+    = (\frac{X}{|X|})^2 \mp 2 \frac{X}{|X|} \cdot \frac{Y}{|Y|} + (\frac{Y}{|Y|})^2 \\
+    &= 1 \mp 2 \frac{\pm|X||Y|}{|X||Y|} + 1 = 2 - 2 = 0
+  \end{align*}
+
+  \begin{align*}
+    (X/|X| \mp Y/|Y|)^2 &= 0 \\ 
+    X/|X| \mp Y/|Y| &= 0 \\
+    X/|X| &= \pm Y/|Y|
+  \end{align*}
+
+\end{question}
+
+
+
+
+\end{document}

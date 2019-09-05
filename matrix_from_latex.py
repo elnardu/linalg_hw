@@ -1,10 +1,11 @@
 import re
 import pprint
 
+
 def get_matrix_from_latex(latex_string):
     latex_string = latex_string.replace(' ', '')
-    latex_string = re.sub(r'\\left\[\\begin\{array\}\{[^\}]*\}', '', latex_string)
-    latex_string = re.sub(r'\\end{array}\\right]', '', latex_string)
+    latex_string = re.sub(r'\\left[\[\{\|]\\begin\{array\}\{[^\}]*\}', '', latex_string)
+    latex_string = re.sub(r'\\end{array}\\right[\]\}\|]', '', latex_string)
 
     result = []
     for line in latex_string.split('\\\\'):

@@ -1,0 +1,456 @@
+\documentclass[letterpaper]{article}
+
+%% Sets page size and margins
+\usepackage[letterpaper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+ 
+%% Useful packages
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{mathtools}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{pythontex}
+\usepackage{lastpage}
+\usepackage{fancyhdr}
+
+\pagestyle{fancy}
+\graphicspath{ {images/} }
+\newcommand{\true}{$T$}
+\newcommand{\false}{$F$}
+\newcommand{\ans}{\textit{Answer: }}
+\newcommand{\prf}{\textbf{Proof:}}
+\newenvironment{question}[2][Question]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+
+\allowdisplaybreaks
+
+% Fancy matrix
+\makeatletter
+\renewcommand*\env@matrix[1][*\c@MaxMatrixCols c]{%
+  \hskip -\arraycolsep
+  \let\@ifnextchar\new@ifnextchar
+  \array{#1}}
+\makeatother
+
+% My scripts setup
+\begin{pycode}
+import sympy
+import numpy as np
+
+import sys
+sys.path.append('..')
+
+from utils import Utils
+utils = Utils(pytex)
+sympify = np.vectorize(sympy.sympify)
+
+# display det
+ddet = utils.print.print_matrix_det
+
+
+def proj(basis, vector):
+  solution = []
+  solution_vec = 0
+  for b in basis:
+    solution.append(f"\\frac{{{utils.print(vector)}\\cdot {utils.print(b)}}}{{{utils.print(b)} \cdot {utils.print(b)}}}{utils.print(b)}")
+    solution_vec += (np.dot(vector, b) / np.dot(b, b)) * b
+
+  solution = "+".join(solution)
+  solution += f"= {utils.print(solution_vec)}"
+  return solution, solution_vec
+
+
+\end{pycode}
+
+\newcommand{\printobj}[1]{\py{utils.print.print_object(#1)}}
+
+\title{MA 351, HW 10} 
+\lhead{MA 351, HW 10}
+
+\author{Elnard Utiushev}
+\rhead{Elnard Utiushev}
+\cfoot{\thepage\ of \pageref{LastPage}}
+
+\begin{document}
+
+\maketitle
+
+Section 6.2: True/False: 6.11, 6.12, 6.14\\
+Exercises: 6.19, 6.20, 6.22, 6.23, 6.24, 6.27, 6.30, 6.32, 6.37
+
+\section{Section 6.2}
+\subsection{True/False}
+
+\begin{question}{6.11}
+  $[1,1,1]^{t}$ is perpendicular to the span of $[1,-1,0]^{t}$ and 
+  $[2,2,-4]^{t}$ in $\mathbb{R}^{3}$
+
+  \ans True, since 
+  $[1,1,1]^{t} \cdot [1,-1,0]^{t} = 0$, 
+  $[1,1,1]^{t} \cdot [2,2,-4]^{t} = 0$
+\end{question}
+
+\begin{question}{6.12}
+  Let $\mathcal{W}$ be a two-dimensional subspace of $\mathbb{R}^{5} .$ 
+  Suppose that $\left\{Q_{1}, Q_{2}\right\}$ and
+  $\left\{P_{1}, P_{2}\right\}$ are two orthogonal bases for $\mathcal{W} .$ 
+  Then for all $X \in \mathbb{R}^{5}$ ,
+
+  $$
+  \frac{X \cdot Q_{1}}{Q_{1} \cdot Q_{1}} Q_{1}+\frac{X \cdot Q_{2}}{Q_{2} \cdot Q_{2}} Q_{2}=\frac{X \cdot P_{1}}{P_{1} \cdot P_{1}} P_{1}+\frac{X \cdot P_{2}}{P_{2} \cdot P_{2}} P_{2}
+  $$
+
+  \ans True, according to Fourier Theorem
+
+  $$
+  \frac{X \cdot Q_{1}}{Q_{1} \cdot Q_{1}} Q_{1}+\frac{X \cdot Q_{2}}{Q_{2} \cdot Q_{2}} Q_{2}
+  = \text{Proj}_\mathcal{W} (X)
+  $$
+  $$
+  \frac{X \cdot P_{1}}{P_{1} \cdot P_{1}} P_{1}+\frac{X \cdot P_{2}}{P_{2} \cdot P_{2}} P_{2}
+  = \text{Proj}_\mathcal{W} (X)
+  $$
+\end{question}
+
+\begin{question}{6.14}
+  Let $\mathcal{W}$ be a subspace of $\mathbb{R}^{n}$ and let 
+  $X \in \mathbb{R}^{n} .$ Then $\operatorname{Proj}_{\mathcal{W}}\left(X-\operatorname{Proj}_{\mathcal{W}}(X)\right)=\mathbf{0}$
+  
+  \ans True, 
+  $\operatorname{Proj}_{\mathcal{W}}\left(X-\operatorname{Proj}_{\mathcal{W}}(X)\right)
+  =\operatorname{Proj}_{\mathcal{W}}\left(\operatorname{Orth}_{\mathcal{W}}(X)\right)
+  =0
+  $
+\end{question}
+
+\subsection{Exercises}
+
+\begin{question}{6.19}
+  In each part let $\mathcal{W}$ be the subspace of $\mathbb{R}^{4}$ spanned by the set $\mathcal{B} .$ Show that $\mathcal{B}$ is
+  an orthogonal basis for $\mathcal{W}$ and find $\operatorname{Proj}_{\mathcal{W}}\left([1,2,-1,-3]^{t}\right)$
+  
+  \begin{enumerate}[label=(\alph*)]
+    \item $\mathcal{B}=\left\{[2,-1,-1,-1]^{t},[1,3,3,-4]^{t},[1,1,0,1]^{t}\right\}$
+    
+    \begin{pycode}
+basis = [
+  [2,-1,-1,-1],
+  [1,3,3,-4],
+  [1,1,0,1]
+]
+
+basis = list(map(np.array, basis))
+vector = np.array([1,2,-1,-3])    
+    \end{pycode}
+
+    \ans $\mathcal{B}_1 \cdot \mathcal{B}_2 = \printobj{basis[0].dot(basis[1])}$,
+    $\mathcal{B}_2 \cdot \mathcal{B}_3 = \printobj{basis[1].dot(basis[2])}$,
+    $\mathcal{B}_1 \cdot \mathcal{B}_3 = \printobj{basis[0].dot(basis[2])}$,
+    therefore, the basis is orthogonal.
+    $$\operatorname{Proj}_{\mathcal{W}}\left([1,2,-1,-3]^{t}\right)
+    = \printobj{proj(basis, vector)[0]}$$
+
+    \item $\mathcal{B}=\left\{[1,1,1,1]^{t},[1,-2,1,0]^{t},[1,1,1,-3]^{t}\right\}$
+    
+    \begin{pycode}
+basis = [
+  [1,1,1,1],
+  [1,-2,1,0],
+  [1,1,1,-3]
+]
+
+basis = list(map(np.array, basis))
+vector = np.array([1,2,-1,-3])
+    \end{pycode}
+
+    \ans $\mathcal{B}_1 \cdot \mathcal{B}_2 = \printobj{basis[0].dot(basis[1])}$,
+    $\mathcal{B}_2 \cdot \mathcal{B}_3 = \printobj{basis[1].dot(basis[2])}$,
+    $\mathcal{B}_1 \cdot \mathcal{B}_3 = \printobj{basis[0].dot(basis[2])}$,
+    therefore, the basis is orthogonal.
+    $$\operatorname{Proj}_{\mathcal{W}}\left([1,2,-1,-3]^{t}\right)
+    = \printobj{proj(basis, vector)[0]}$$
+  \end{enumerate}
+\end{question}
+
+\begin{question}{6.20}
+  Below, you are given two sets of vectors $\mathcal{B}_{1}$ and $\mathcal{B}_{2}$ in $\mathbb{R}^{2}$ .
+
+  $$
+  \begin{array}{l}{\mathcal{B}_{1}=\left\{[-1,1,-1]^{t},[1,3,2]^{t}\right\}} \\ {B_{2}=\left\{[3,1,4]^{t},[-4,16,-1]^{t}\right\}}\end{array}
+  $$
+
+  \begin{pycode}
+basis1 = [
+  [-1,1,-1],
+  [1,3,2]
+]
+basis1 = list(map(np.array, basis1))
+
+basis2 = [
+  [3,1,4],
+  [-4,16,-1]
+]
+basis2 = list(map(np.array, basis2))
+  \end{pycode}
+
+  \begin{enumerate}[label=(\alph*)]
+    \item Show that both $\mathcal{B}_{1}$ and $\mathcal{B}_{2}$ are orthogonal sets.
+    
+    \begin{enumerate}
+      \item $\mathcal{B}_{1_1} \cdot \mathcal{B}_{1_2} = \printobj{basis1[0].dot(basis1[1])}$,
+      therefore, basis 1 is orthogonal
+      \item $\mathcal{B}_{2_1} \cdot \mathcal{B}_{2_2} = \printobj{basis2[0].dot(basis2[1])}$,
+      therefore, basis 2 is orthogonal
+    \end{enumerate}
+
+    \item Show that $B_{1}$ and $B_{2}$ both span the same subspace $\mathcal{W}$ of $\mathbb{R}^{3}$ .
+    
+    \ans 
+    $\printobj{utils.algorithms.as_linear_combination(basis1, basis2[0])[1]}$,
+    $\printobj{utils.algorithms.as_linear_combination(basis1, basis2[1])[1]}$
+
+    \item Find $\operatorname{Proj}_{w}\left([1,2,2]^{t}\right)$ using formula $(6.20)$ on page 321 and $\mathcal{B}_{1}$
+    
+    \ans $$\printobj{proj(basis1, np.array([1,2,2]))[0]}$$
+
+    \item Find $\operatorname{Proj}_{w}\left([1,2,2]^{t}\right)$ using formula $(6.20)$ on page 321 and $B_{2} .$ You
+    should get the same answer as in part (c). Why?
+
+    \ans $$\printobj{proj(basis2, np.array([1,2,2]))[0]}$$
+
+    The answer is the same since $\mathcal{B}_{1}$ and $\mathcal{B}_{2}$ describe the same subspace according to (b)
+
+    \item Let $X=[x, y, z]^{t} .$ Use formula $(6.20)$ on page 321 to find $\operatorname{Proj}_{w}(X)$ using
+    the basis $B_{1} .$ Then find a matrix $R$ such that $\operatorname{Proj}_w(X)=R X .$
+
+    \begin{pycode}
+vector = np.array(['x', 'y', 'z'])
+vector = sympify(vector)
+
+R = np.array([
+  ['17 / 42', '-5 / 42', '10 / 21'],
+  ['-5 / 42', '41 / 42', '2 / 21'],
+  ['10 / 21', '2 / 21', '13 / 21'],
+])
+R = sympify(R)
+    \end{pycode}
+
+    \ans $$\printobj{proj(basis1, vector)[0]}$$
+    $$R = \printobj{R}$$
+
+    \item Repeat part (e) using basis $\mathcal{B}_{2} .$ You should get the same matrix $R$
+    
+    \ans $$\printobj{proj(basis2, vector)[0]}$$
+    $$R = \printobj{R}$$
+
+    \item Show that the matrix $R$ from part (e) satisfies $R^{2}=R .$ Explain the geometric meaning of this equality.
+    
+    \ans
+    $$R^2 = \printobj{R}\printobj{R} = \printobj{sympy.MatMul(sympy.Matrix(R), sympy.Matrix(R)).doit()} = R$$
+  \end{enumerate}
+
+\end{question}
+
+\begin{question}{6.22}
+  Use the Gram-Schmidt process to find an orthogonal basis for the subspaces
+  of $\mathbb{R}^{n}$ spanned by the following ordered sets of vectors for the appropriate $n :$
+  
+  \begin{pycode}
+problems = [
+  [[0, 1, 1], [1, 1, 1]],
+  [[-2, 1, 3], [2, 1, 2]],
+  [[1, 2, 1, 1], [-2, 1, 1, -1], [1, 2, 1, 3]],
+  [[1, 1, -1, 1], [1, 1, 0, 0], [1, 1, 1, -1]]
+]
+
+def gram_schi(basis):
+  solution = "\\begin{itemize}\n"
+  p1 = basis[0]
+  new_basis = [p1]
+
+  solution += f"\\item $P_1 = X_1 = {utils.print(p1)}$\n"
+  for i, b in enumerate(basis[1:]):
+    new_p = b - proj(new_basis, b)[1]
+
+    solution += f"\\item $Y_{i+2} = {proj(new_basis, b)[0]}$, "
+    solution += f"$P_{i+2} = X_{i+2} - Y_{i+2} = {utils.print(new_p)}$"
+    solution += "\n"
+
+    if (new_p == 0).all():
+      continue
+
+    new_basis.append(new_p)
+
+  solution += "\\end{itemize}\n\n"
+  return solution, new_basis
+
+problem_solution = []
+
+solution = "\\begin{enumerate}[label=(\\alph*)]"
+for problem in problems:
+  problem = list(map(sympify, problem))
+  solution += "\\item "
+  solution += f"$${utils.print.print_list_of_arrays(problem)}$$"
+  gram_solution, gram_solution_vecs = gram_schi(problem)
+  solution += gram_solution
+  problem_solution.append(gram_solution_vecs)
+
+solution += "\\end{enumerate}"
+  \end{pycode}
+
+  \ans 
+  \py{solution}
+\end{question}
+
+\begin{question}{6.23}
+  Compute Proj $_{\mathcal{W}}\left([1,2,3]^{t}\right),$ where $\mathcal{W}$ is the subspace of $\mathbb{R}^{3}$ spanned by the
+  vectors in Exercise $6.22 .$ a. Repeat for the subspace spanned by the vectors in
+  Exercise $6.22 . \mathrm{b} .$
+
+  \ans 
+
+  \begin{enumerate}[label=(\alph*)]
+    \item 6.22a 
+    $$\printobj{proj(problem_solution[0], np.array([1,2,3]))[0]}$$
+    \item 6.22b 
+    $$\printobj{proj(problem_solution[1], np.array([1,2,3]))[0]}$$
+  \end{enumerate}
+  
+\end{question}
+
+\begin{question}{6.24}
+  Compute Proj $w\left([1,2,3,4]^{t}\right),$ where $\mathcal{W}$ is the subspace of $\mathbb{R}^{4}$ spanned by the
+  vectors in Exercise $6.22 . \mathrm{c} .$ Repeat for the subspace spanned by the vectors in
+  Exercise $6.22 . \mathrm{d} .$
+  
+  \ans 
+
+  \begin{enumerate}[label=(\alph*)]
+    \item 6.22c 
+    $$\printobj{proj(problem_solution[2], np.array([1,2,3,4]))[0]}$$
+    \item 6.22d 
+    $$\printobj{proj(problem_solution[3], np.array([1,2,3,4]))[0]}$$
+  \end{enumerate}
+
+\end{question}
+
+\begin{question}{6.27}
+  Let $A$ be an $m \times n$ matrix and let $\mathcal{W} \subset \mathbb{R}^{n}$ be the nullspace of $A .$ Prove that for
+  all $X \in \mathbb{R}^{n}, A X=A\left(\operatorname{Orth}_{\mathcal{W}} X\right)$
+  
+  \ans $A\left(\operatorname{Orth}_{\mathcal{W}} X\right) 
+  = A(X - \operatorname{Proj}_{\mathcal{W}} X)
+  = AX - A(\operatorname{Proj}_{\mathcal{W}} X)$, since $\mathcal{W}$ is the nullspace of A and 
+  $\operatorname{Proj}_{\mathcal{W}} X$ is in $\mathcal{W}$, $A(\operatorname{Proj}_{\mathcal{W}} X) = 0$,
+  therefore $AX - A(\operatorname{Proj}_{\mathcal{W}} X) = AX$
+\end{question}
+
+\begin{question}{6.30}
+  Find an orthogonal basis for $S^{\perp}$ for the following sets of vectors.
+  
+
+  \begin{enumerate}[label=(\alph*)]
+    \begin{pycode}
+basis = [
+  [1,3,1,-1],
+  [2,6,0,1],
+  [4,12,2,-1]
+]
+
+basis = list(map(np.array, basis))
+problem = np.vstack(basis)
+
+rref, _ = utils.algorithms.rref(np.c_[problem, np.zeros((problem.shape[0], 1)).astype(int)])
+matrix_sol, sol = utils.algorithms.show_solutions(rref)
+    \end{pycode}
+    \item $$\printobj{utils.print.print_list_of_arrays(basis)}$$
+    $$\printobj{problem}X=0$$
+    \py{sol} \\
+    Basis: $\printobj{utils.print.print_list_of_arrays([matrix_sol['param_vecs'][0], matrix_sol['param_vecs'][1]])}$ 
+
+
+    \begin{pycode}
+basis = [
+  [1,3,1,-1],
+  [2,6,0,1]
+]
+
+basis = list(map(np.array, basis))
+problem = np.vstack(basis)
+
+rref, _ = utils.algorithms.rref(np.c_[problem, np.zeros((problem.shape[0], 1)).astype(int)])
+matrix_sol, sol = utils.algorithms.show_solutions(rref)
+    \end{pycode}
+    \item $$\printobj{utils.print.print_list_of_arrays(basis)}$$
+    $$\printobj{problem}X=0$$
+    \py{sol} \\
+    Basis: $\printobj{utils.print.print_list_of_arrays([matrix_sol['param_vecs'][0], matrix_sol['param_vecs'][1]])}$
+
+
+    \begin{pycode}
+basis = [
+  [1,1,1,1,1],
+  [1,1,0,1,-1],
+  [1,-1,0,0,1]
+]
+
+basis = list(map(np.array, basis))
+problem = np.vstack(basis)
+
+rref, _ = utils.algorithms.rref(np.c_[problem, np.zeros((problem.shape[0], 1)).astype(int)])
+matrix_sol, sol = utils.algorithms.show_solutions(rref)
+    \end{pycode}
+    \item $$\printobj{utils.print.print_list_of_arrays(basis)}$$
+    $$\printobj{problem}X=0$$
+    \py{sol} \\
+    Basis: $\printobj{utils.print.print_list_of_arrays(matrix_sol['param_vecs'][:-1])}$ 
+  \end{enumerate}
+
+\end{question}
+
+\begin{question}{6.32}
+  Let $\mathcal{W}$ be a subspace of $\mathbb{R}^{n} .$ Let $\left\{P_{1}, P_{2}, \ldots, P_{k}\right\}$ be an orthogonal basis for $\mathcal{W}$
+and let $\left\{X_{1}, X_{2}, \ldots, X_{m}\right\}$ be an orthogonal basis for $\mathcal{W}^{\perp} .$ Show that the set
+
+$$
+\mathcal{B}=\left\{P_{1}, P_{2}, \ldots, P_{k}, X_{1}, X_{2}, \ldots, X_{m}\right\}
+$$
+
+is an orthogonal set. Prove that this set is a basis for $\mathbb{R}^{n}$ and, hence, $\operatorname{dim}(\mathcal{W})
++\operatorname{dim}\left(\mathcal{W}^{\perp}\right)=n$
+
+  \ans This set is orthogonal since any two vectors $P_i$, $P_k$ and $X_i$, $X_j$
+  are orthogonal and any $X_i$ is orthogonal to any $P_j$ since $P_j$ is in $\mathcal{W}$
+  and $X_i$ is in $\mathcal{W}^{\perp}$. This set is a basis for $\mathbb{R}^{n}$, since
+  any vector $v$ can be written as $v = \operatorname{Proj}_{\mathcal{W}} + 
+  \operatorname{Orth}_{\mathcal{W}}$, where $\operatorname{Proj}_{\mathcal{W}} \in \mathcal{W}$
+  and $\operatorname{Orth}_{\mathcal{W}} \in \mathcal{W}^{\perp}$. The set is 
+  linearly independent, so $\operatorname{dim}(\mathcal{W})
+  +\operatorname{dim}\left(\mathcal{W}^{\perp}\right) = k + m =n$
+\end{question}
+
+\begin{question}{6.37}
+Let $\left\{P_{1}, P_{2}\right\}$ be an ordered orthogonal (but not orthonormal) basis for some
+subspace $\mathcal{W}$ of $\mathbb{R}^{n} .$ Let $X$ and $Y$ be elements of $\mathcal{W}$ whose coordinate vectors
+with respect to these bases are $X^{\prime}=\left[x_{1}, x_{2}\right]^{t}$ and $Y^{\prime}=\left[y_{1}, y_{2}\right]^{t} .$ Prove that
+  
+$$
+X \cdot Y=x_{1} y_{1}\left|P_{1}\right|^{2}+x_{2} y_{2}\left|P_{2}\right|^{2}
+$$
+
+\ans 
+
+$$
+X \cdot Y=x_{1}P_{1}y_{1}P_{1}+x_{2}P_{2} y_{2}P_{2}
+= x_{1} y_{1}\left|P_{1}\right|^{2}+x_{2} y_{2}\left|P_{2}\right|^{2}
+$$
+
+What is the corresponding formula for $|X|^{2} ?$
+
+\ans 
+$$|X|^{2} = x_{1}^2\left|P_{1}\right|^{2}+x_{2}^2 \left|P_{2}\right|^{2}$$
+
+\end{question}
+
+\end{document}

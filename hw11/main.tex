@@ -1,0 +1,431 @@
+\documentclass[letterpaper]{article}
+
+%% Sets page size and margins
+\usepackage[letterpaper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+ 
+%% Useful packages
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{mathtools}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{pythontex}
+\usepackage{lastpage}
+\usepackage{fancyhdr}
+
+\pagestyle{fancy}
+\graphicspath{ {images/} }
+\newcommand{\true}{$T$}
+\newcommand{\false}{$F$}
+\newcommand{\ans}{\textit{Answer: }}
+\newcommand{\prf}{\textbf{Proof:}}
+\newenvironment{question}[2][Question]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}\hskip \labelsep {\bfseries #2.}]}{\end{trivlist}}
+
+\allowdisplaybreaks
+
+% Fancy matrix
+\makeatletter
+\renewcommand*\env@matrix[1][*\c@MaxMatrixCols c]{%
+  \hskip -\arraycolsep
+  \let\@ifnextchar\new@ifnextchar
+  \array{#1}}
+\makeatother
+
+% My scripts setup
+\begin{pycode}
+import sympy
+import numpy as np
+
+import sys
+sys.path.append('..')
+
+from utils import Utils
+utils = Utils(pytex)
+sympify = np.vectorize(sympy.sympify)
+
+# display det
+ddet = utils.print.print_matrix_det
+
+
+def proj(basis, vector):
+  solution = []
+  solution_vec = 0
+  for b in basis:
+    solution.append(f"\\frac{{{utils.print(vector)}\\cdot {utils.print(b)}}}{{{utils.print(b)} \cdot {utils.print(b)}}}{utils.print(b)}")
+    solution_vec += (np.dot(vector, b) / np.dot(b, b)) * b
+
+  solution = "+".join(solution)
+  solution += f"= {utils.print(solution_vec)}"
+  return solution, solution_vec
+
+
+def gram_schi(basis):
+  solution = "\\begin{itemize}\n"
+  p1 = basis[0]
+  new_basis = [p1]
+
+  solution += f"\\item $P_1 = X_1 = {utils.print(p1)}$\n"
+  for i, b in enumerate(basis[1:]):
+    new_p = b - proj(new_basis, b)[1]
+
+    solution += f"\\item $Y_{i+2} = {proj(new_basis, b)[0]}$, "
+    solution += f"$P_{i+2} = X_{i+2} - Y_{i+2} = {utils.print(new_p)}$"
+    solution += "\n"
+
+    if (new_p == 0).all():
+      continue
+
+    new_basis.append(new_p)
+
+  solution += "\\end{itemize}\n\n"
+  return solution, new_basis
+
+\end{pycode}
+
+\newcommand{\printobj}[1]{\py{utils.print.print_object(#1)}}
+
+\title{MA 351, HW 11} 
+\lhead{MA 351, HW 11}
+
+\author{Elnard Utiushev}
+\rhead{Elnard Utiushev}
+\cfoot{\thepage\ of \pageref{LastPage}}
+
+\begin{document}
+
+\maketitle
+
+Section 6.4: True/False: 6.15, 6.16, 6.17, 6.18, 6.19, 6.20, 6.22 \\
+Exercises: 6.70, 6.71, 6.74, 6.75, 6.76, 6.81, 6.82, 6.83, 6.84
+
+\section{Section 6.4}
+\subsection{True/False}
+
+\begin{question}{6.15}
+  There exist $4 \times 4$ orthogonal matrices with rank 3.
+
+  \ans It is not possible since $\det(AA^t) = \det(I) = 1$, so $A$ cannot 
+  have a rank less than 4.
+\end{question}
+
+\begin{question}{6.16}
+  If $A$ is an $n \times n$ orthogonal matrix and $B$ is an $n \times 1$ matrix, then the equation
+  $A X=B$ has a unique solution.
+
+  \ans Since $A$ is an orthogonal matrix, $\det(A) \neq 0$, therefore equation
+  $A X=B$ has a unique solution.
+\end{question}
+
+\begin{question}{6.17}
+  Multiplication by an orthogonal matrix transforms congruent triangles into
+  congruent triangles.
+
+  \ans True, since an orthogonal matrix transform does not change the length 
+  of triangles' sides
+\end{question}
+
+\begin{question}{6.18}
+  If multiplication by an orthogonal matrix transforms a given parallelogram into
+  a square, then the parallelogram was a square to begin with.
+
+  \ans True, since orthogonal matrix transformation preserves both angles and lengths
+\end{question}
+
+\begin{question}{6.19}
+  The following matrix is orthogonal:
+
+  $$
+  A = \left[ \begin{array}{rrr}{1} & {0} & {0} \\ {0} & {1} & {-1} \\ {0} & {1} & {1}\end{array}\right]
+  $$
+
+  \begin{pycode}
+problem = [[1, 0, 0], [0, 1, -1], [0, 1, 1]]
+problem = np.array(problem)
+  \end{pycode}
+
+  \ans False
+
+  $$A A^t = \printobj{problem @ problem.T} \neq I$$
+
+\end{question}
+
+\begin{question}{6.20}
+  Suppose that $A=\left[A_{1}, A_{2}, A_{3}\right]$ is an orthogonal matrix where $A_{i}$ are the columns
+  of $A .$ Then $\left|A_{1}+A_{2}+A_3 \right|=\sqrt{3} .$
+
+  \ans True, since we can form an orthonormal basis from the columns of an orthogonal matrix
+\end{question}
+
+\begin{question}{6.22}
+  The following matrix is orthogonal:
+
+  $$
+  A=\left[ \begin{array}{lll}{1} & {0} & {0} \\ {0} & {1} & {0} \\ {0} & {0} & {1}\end{array}\right]-\frac{2}{3} \left[ \begin{array}{l}{1} \\ {1} \\ {1}\end{array}\right][1,1,1]
+  $$
+
+  \begin{pycode}
+problem = sympify(np.eye(3).astype(int)) 
+problem = problem - 2 * sympify(np.ones((3, 3)).astype(int)) / 3
+  \end{pycode}
+
+  \ans True
+
+  $$A = \printobj{problem}$$
+
+  $$AA^t = \printobj{problem} \printobj{problem.T} 
+  = I$$
+\end{question}
+
+\subsection{Exercises}
+
+\begin{question}{6.70}
+  Change just one column of each of the following matrices to make them
+  orthogonal:
+
+  \begin{enumerate}[label=(\alph*)]
+    \item 
+    $$
+    \frac{1}{5} \left[ \begin{array}{rrr}{3} & {4} & {3} \\ {-4} & {3} & {0} \\ {0} & {0} & {4}\end{array}\right]
+    $$
+
+    \ans
+    $$
+    \frac{1}{5} \left[ \begin{array}{rrr}{3} & {4} & {0} \\ {-4} & {3} & {0} \\ {0} & {0} & {5}\end{array}\right]
+    $$
+    
+%     \begin{pycode}
+% basis = [
+%   [3, -4, 0],
+%   [4, 3, 0],
+%   [3, 0, 4]
+% ]
+
+% basis = list(map(sympify, basis))
+
+% sol, new_basis = gram_schi(basis)
+
+% new_matrix = np.column_stack(new_basis)
+% new_matrix = [
+%   [3, 4, 0],
+%   [-4, 3, 0],
+%   [0, 0, 1]
+% ]
+% new_matrix = sympify(new_matrix) / 5
+%     \end{pycode}
+    
+    % \py{sol}
+
+    % $$\printobj{new_matrix}$$
+
+    % $$\printobj{sympy.MatMul(sympy.Matrix(new_matrix), sympy.Matrix(new_matrix)).doit()}$$
+
+    \item 
+    $$
+    \frac{1}{25} \left[ \begin{array}{rrr}{16} & {-12} & {-15} \\ {-12} & {9} & {-20} \\ {-15} & {-20} & {1}\end{array}\right]
+    $$
+
+    \ans 
+    $$
+    \frac{1}{25} \left[ \begin{array}{rrr}{16} & {-12} & {-15} \\ {-12} & {9} & {-20} \\ {-15} & {-20} & {0}\end{array}\right]
+    $$
+
+
+    \item 
+    $$
+    \frac{1}{9} \left[ \begin{array}{rrr}{8} & {1} & {-4} \\ {-4} & {1} & {-7} \\ {1} & {1} & {4}\end{array}\right]
+    $$
+
+    \ans 
+    $$
+    \frac{1}{9} \left[ \begin{array}{rrr}{8} & {1} & {-4} \\ {-4} & {4} & {-7} \\ {1} & {8} & {4}\end{array}\right]
+    $$
+
+  \end{enumerate}
+
+\end{question}
+
+\begin{question}{6.71}
+  In each part, find numbers $C$ or $a, b, c,$ and $d$ such that the given matrix $A$ is
+  orthogonal:
+
+  \begin{enumerate}
+    \item 
+    $$
+    A=C \left[ \begin{array}{ccc}{9} & {-12} & {-8} \\ {-12} & {-1} & {-12} \\ {-8} & {-12} & {9}\end{array}\right]
+    $$
+
+    \ans $C = \pm \frac{1}{17}$
+
+    \item
+    $$
+    A=\frac{1}{2} \left[ \begin{array}{rrrr}{1} & {1} & {\sqrt{2}} & {a} \\ {1} & {-1} & {0} & {b} \\ {1} & {1} & {-\sqrt{2}} & {c} \\ {1} & {-1} & {0} & {d}\end{array}\right]
+    $$
+
+    \ans $a = 0, b = \pm \sqrt{2}, c = 0, d = \mp \sqrt{2}$ 
+  \end{enumerate}  
+
+\end{question}
+
+\begin{question}{6.74}
+  Let $A$ and $B$ be $n \times n$ orthogonal matrices. Prove that $A B$ is orthogonal by
+  showing that for all $X \in \mathbb{R}^{n},|(A B) X|=|X|$
+
+  \ans $|(A B) X| = |A (B X)| = |B X| = |X|$
+\end{question}
+
+\begin{question}{6.75}
+  Redo Exercise 6.74 by showing that $(A B)^{t}(A B)=I$
+
+  \ans $(A B)^{t}(A B) = B^tA^tAB = B^tIB = B^tB = I$
+\end{question}
+
+\begin{question}{6.76}
+  Prove that the inverse of an orthogonal matrix is orthogonal.
+
+  \ans Let $A$ to be an orthogonal matrix. $A^t$ is an orthogonal matrix according 
+  to $A^tA = I$. Since $A^{-1} = A^t$, $A^{-1}$ is an orthogonal matrix
+\end{question}
+
+\begin{question}{6.81}
+  Is it possible to find a $3 \times 2$ matrix with orthonormal rows? Explain.
+
+  \ans It is not possible, since we are going to have 3 vectors, with size $2 \times 1$
+  spanning $\mathbb{R}^{2}$, so one of them will be a linear combination of others.
+\end{question}
+
+\begin{question}{6.82}
+  Give an example of a $3 \times 2$ matrix $A$ with all entries nonzero that has
+  orthonormal columns. Compute $A A^{t}$ and $A^{t} A .$ Which is the identity? Prove that the
+  similar product equals $I$ for any $A$ that has orthonormal columns.
+
+  \ans 
+
+  \begin{pycode}
+A = [
+  [2, -1],
+  [-1, 2],
+  [2, 2]
+]
+
+A = sympify(A)
+A = A / 3
+A = sympy.Matrix(A)
+  \end{pycode}
+
+  $$A = \frac{1}{3}\printobj{[
+    [2, -1],
+    [-1, 2],
+    [2, 2]
+  ]}$$
+
+  $$AA^t = \printobj{sympy.MatMul(A, A.T).doit()}$$
+  $$A^tA = \printobj{sympy.MatMul(A.T, A).doit()}$$
+
+  $A^tA$ results in an identity matrix.
+
+  \begin{pycode}
+A = [
+  ['a', 'b'],
+  ['c', 'd'],
+  ['e', 'f']
+]
+
+A = sympify(A)
+A = sympy.Matrix(A)
+  \end{pycode}
+
+  $$A = \printobj{A}$$
+  $$A^tA = \printobj{sympy.MatMul(A.T, A).doit()}$$
+
+  Since the columns are orthogonal, $ab+cd+ef = 0$. Since the columns are 
+  orthonormal, $a^2 + c^2 + e^2 = b^2 + d^2 + f^2 = 1$
+\end{question}
+
+\begin{question}{6.83}
+  In parts $(\mathrm{a})-(\mathrm{c}),$ find the matrix $M$ such that multiplication by $M$ describes
+  reflection about the given line, plane, or hyperplane. (Use formula $(6.62)$ on
+  page $362 .$ .
+
+  \begin{pycode}
+def householder_matrix(A):
+  solution = "I - \\frac{2}{|P|^2}PP^t ="
+  solution += utils.print(np.eye(A.shape[0]).astype(int)) + " "
+  solution += f"- \\frac{{2}}{{{utils.print(A.dot(A))}}} {utils.print(sympy.MatMul(A, A.T).doit())} ="
+  matrix_solution = sympify(np.eye(A.shape[0]).astype(int)) - (2 / A.dot(A)) * sympy.MatMul(A, A.T)
+  matrix_solution = matrix_solution.doit()
+  solution += utils.print(matrix_solution)
+  return solution 
+  \end{pycode}
+
+  \begin{enumerate}
+    \item $2 x-5 y=0$
+    \begin{pycode}
+A = sympy.Matrix([2, -5])
+    \end{pycode}
+
+    \ans 
+    $$P = \printobj{A}$$
+    $$M_P = \printobj{householder_matrix(A)}$$
+
+    \item $x+y-3 z=0$
+    \begin{pycode}
+A = sympy.Matrix([1, 1, -3])
+    \end{pycode}
+
+    \ans 
+    $$P = \printobj{A}$$
+    $$M_P = \printobj{householder_matrix(A)}$$
+
+    \item $2 x+y-z-3 w=0$
+    \begin{pycode}
+A = sympy.Matrix([2, 1, 1, -3])
+    \end{pycode}
+
+    \ans 
+    $$P = \printobj{A}$$
+    $$M_P = \printobj{householder_matrix(A)}$$
+  \end{enumerate}
+
+\end{question}
+
+\begin{question}{6.84}
+  For each given vector $X \in \mathbb{R}^{n},$ find a scalar $k,$ a vector $P \in \mathbb{R}^{n},$ and a 
+  Householder matrix $M_{P}[$ formula $(6.62)$ on page 362$]$ such that $M_{P} X=k I_{1}$ where $I_{1}$
+  is the first standard basis element of $\mathbb{R}^{n}[$ formula $(6.62)$ on page 362$]$ .
+
+  \begin{enumerate}
+    \item $X=[3,4]^{t}$
+    \begin{pycode}
+X = sympy.Matrix([3, 4])
+    \end{pycode}
+
+    \ans 
+    $$k = |X| = 5$$
+    $$P = X - |X|I_1 = \printobj{X - 5 * sympy.Matrix([1, 0])}$$
+    $$M_P = \printobj{householder_matrix(X - 5 * sympy.Matrix([1, 0]))}$$
+
+    \item $X=[1,1]^{t}$
+    \begin{pycode}
+X = sympy.Matrix([1, 1])
+    \end{pycode}
+
+    \ans 
+    $$k = |X| = 1$$
+    $$P = X - |X|I_1 = \printobj{X - 1 * sympy.Matrix([1, 0])}$$
+    $$M_P = \printobj{householder_matrix(X - 1 * sympy.Matrix([1, 0]))}$$
+
+    \item $X=[1,2,2]^{t}$
+    \begin{pycode}
+X = sympy.Matrix([1, 2, 2])
+    \end{pycode}
+
+    \ans 
+    $$k = |X| = 3$$
+    $$P = X - |X|I_1 = \printobj{X - 3 * sympy.Matrix([1, 0, 0])}$$
+    $$M_P = \printobj{householder_matrix(X - 3 * sympy.Matrix([1, 0, 0]))}$$
+  \end{enumerate}
+\end{question}
+
+\end{document}
