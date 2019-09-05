@@ -7,5 +7,7 @@ Features:
 * Representing matrix as a linear combination
 * Automatic matrix solution display
 * Step by step Gram–Schmidt process
-* Step by step eigenvalues and eigenvectors calculator
+* Step by step eigenvalues and eigenvectors calculator (only basic ones tho)
 * A lot of helper and formatting functions
+
+You have to compile those latex files with pythontex and xelatex (xelatex -> pythontex -> xelatex).
